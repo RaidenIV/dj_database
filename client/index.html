@@ -35,7 +35,7 @@
             <div id="adminBanner" class="admin-banner unauthorized" title="Admin token status">Unauthorized</div>
           </div>
 
-          <div class="subtitle" id="profileCount">Manage and organize DJ profiles</div>
+          <div class="subtitle" id="adminStatusLine">Unauthorized</div>
 
           <div id="miniConsole" class="mini-console" aria-live="polite"></div>
         </div>
@@ -48,25 +48,25 @@
       </div>
 
       <div class="controls">
-        <button class="primary" id="btnCreate" type="button">Create Profile</button>
-        <button id="btnExport" type="button">Export CSV</button>
-        <button id="btnLoadCsv" type="button">Load CSV</button>
-        <button id="btnSaveToServer" type="button" disabled>Save CSV to Server</button>
+        <button class="primary" id="btnCreate" type="button">Create Profile</button>        <button id="btnLoadCsv" type="button">Load CSV</button>
+        <button id="btnSaveToServer" type="button" disabled>Save</button>
       </div>
 
       <input type="file" id="csvFile" accept=".csv" style="display:none;">
 
       <!-- Auth -->
-      <div class="search-card">
-        <div class="options-grid" style="align-items: end;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="adminToken">Admin Token</label>
-            <input type="text" id="adminToken" placeholder="Paste token (shared with your team)">
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <button id="btnSaveToken" type="button">Save Token</button>
-            <div id="serverStatus" class="status-message"></div>
-          </div>
+      <div class="search-card token-card">
+        <div class="token-label-row">
+          <label for="adminToken">Admin Token</label>
+          <span id="serverDot" class="conn-dot conn-off" title="Server connection"></span>
+          <span id="serverStatus" class="conn-text">Disconnected</span>
+        </div>
+
+        <div class="token-input-row">
+          <input type="password" id="adminToken" placeholder="Paste token (shared with your team)">
+          <button id="btnSaveToken" type="button">Save Token</button>
+        </div>
+      </div>
         </div>
       </div>
 
@@ -180,7 +180,7 @@
 
           <div class="form-group">
             <label for="phoneNumber">Phone Number</label>
-            <input type="text" id="phoneNumber" placeholder="(555)555-5555">
+            <input type="text" id="phoneNumber" placeholder="(555) 555-5555">
           </div>
 
           <div class="form-group">
