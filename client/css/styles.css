@@ -179,8 +179,28 @@ button.btn-save:disabled {
   gap: 16px;
 }
 
+.info-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.profiles-card {
+  padding: 16px;
+}
+
+.profiles-card-header {
+  margin-bottom: 16px;
+}
+
+.profiles-card .controls {
+  margin-bottom: 0;
+}
+
 @media (max-width: 1024px) {
   .controls-row { grid-template-columns: 1fr; }
+  .info-cards-row { grid-template-columns: 1fr; }
 }
 
 .analytics-header {
@@ -188,6 +208,18 @@ button.btn-save:disabled {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
 }
 
 .toggle-analytics { padding: 8px 16px; font-size: 13px; }
@@ -246,8 +278,8 @@ button.btn-save:disabled {
 
 .graphs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
   margin-top: 16px;
 }
 
@@ -510,6 +542,7 @@ input:focus {
   align-items: center;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  min-width: auto;
 }
 
 .nav-toggle:hover {
@@ -576,6 +609,7 @@ input:focus {
   }
   .graphs-grid { grid-template-columns: 1fr; }
   .options-grid { grid-template-columns: 1fr; }
+  .info-cards-row { grid-template-columns: 1fr; }
 }
 
 
