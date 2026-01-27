@@ -23,11 +23,7 @@ body { padding: 20px; }
 .container {
   max-width: 1600px;
   margin: 0 auto;
-  padding-top: 60px;
-}
-
-@media (min-width: 768px) {
-  .container { padding-top: 0; }
+  padding-top: 86px; /* clears fixed Menu button */
 }
 
 .main-card {
@@ -50,6 +46,54 @@ body { padding: 20px; }
 }
 
 .main-logo { max-width: 150px; height: auto; flex-shrink: 0; }
+
+/* Header enhancements */
+.header-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.header-topline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.admin-banner {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.04);
+  user-select: none;
+  line-height: 1;
+}
+.admin-banner.authorized {
+  color: #0b1a12;
+  background: rgba(159, 230, 184, 0.9);
+  border-color: rgba(159, 230, 184, 0.9);
+}
+.admin-banner.unauthorized {
+  color: #2b0f0f;
+  background: rgba(239, 68, 68, 0.85);
+  border-color: rgba(239, 68, 68, 0.85);
+}
+
+.mini-console {
+  background: #0b0b0c;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  max-height: 92px;
+  overflow: auto;
+}
+
+.console-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.console-ts { color: rgba(255,255,255,0.45); margin-right: 8px; }
+.console-info { color: rgba(255,255,255,0.85); }
+.console-ok { color: #9fe6b8; }
+.console-warn { color: #ffd38a; }
+.console-blue { color: #7dd3fc; }
+.console-red { color: #fca5a5; }
+
+
 @media (max-width: 768px) { .main-logo { max-width: 100px; } }
 
 h1 {
@@ -498,4 +542,29 @@ input:focus {
   .controls button { width: 100%; }
   .graphs-grid { grid-template-columns: 1fr; }
   .options-grid { grid-template-columns: 1fr; }
+}
+
+
+/* Make all cards the same height within each size mode */
+.profiles-grid.size-small .profile-card { height: 260px; }
+.profiles-grid.size-medium .profile-card { height: 290px; }
+.profiles-grid.size-large .profile-card { height: 330px; }
+
+.profile-info { display: flex; flex-direction: column; height: 100%; }
+.profile-details { flex: 1; overflow: hidden; }
+.profile-actions { margin-top: auto; }
+
+/* Clamp long values inside cards */
+.detail-value.truncate {
+  display: inline-block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+@media (max-height: 800px) and (min-width: 900px) {
+  .container { padding-top: 96px; }
+  .main-card { margin-top: 0; }
 }
