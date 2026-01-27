@@ -1,3 +1,4 @@
+// server/server.js
 require("dotenv").config();
 
 const express = require("express");
@@ -27,6 +28,13 @@ app.use(
   })
 );
 
+/**
+ * CORS notes:
+ * - Browser requests include an Origin header.
+ * - PowerShell/curl/server-to-server often DO NOT include Origin. Those should be allowed.
+ * - Some contexts (file://, sandboxed iframes) send Origin: "null".
+ *   If you need that, set ALLOW_NULL_ORIGIN=true.
+ */
 function buildCorsOptions() {
   const allowed = (process.env.ALLOWED_ORIGINS || "")
     .split(",")
@@ -34,32 +42,56 @@ function buildCorsOptions() {
     .filter(Boolean);
 
   const allowNullOrigin = String(process.env.ALLOW_NULL_ORIGIN || "false").toLowerCase() === "true";
+  const isProd = String(process.env.NODE_ENV || "").toLowerCase() === "production";
 
   return {
     origin: function (origin, callback) {
-      if (!origin) {
-        if (allowNullOrigin || process.env.NODE_ENV !== "production") return callback(null, true);
-        return callback(new Error("CORS: null origin not allowed"));
+      // No Origin header: allow (not a browser CORS scenario)
+      if (!origin) return callback(null, true);
+
+      // Origin: "null" (file://, sandboxed iframe)
+      if (origin === "null") {
+        if (allowNullOrigin || !isProd) return callback(null, true);
+        return callback(null, false); // deny without throwing / without 500
       }
 
-      if (allowed.length === 0) return callback(null, true); // if not set, allow all (not recommended)
-      if (allowed.includes(origin)) return callback(null, true);
+      // If no allowlist provided, allow all (not recommended, but avoids accidental lockout)
+      if (allowed.length === 0) return callback(null, true);
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    }
+      // Allow only exact matches from ALLOWED_ORIGINS
+      return callback(null, allowed.includes(origin));
+    },
+    credentials: false
   };
 }
 
 app.use(cors(buildCorsOptions()));
 
-app.get("/health", (_req, res) => res.json({ ok: true }));
+app.get("/health", (_req, res) => {
+  // 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
+  const mongoState = mongoose.connection?.readyState ?? 0;
+  res.json({ ok: true, mongoState });
+});
 
 app.use("/api/djs", djsRouter);
 
+// Basic error handler so unexpected errors don't become opaque crashes
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal Server Error" });
+});
+
 async function start() {
-  const uri = (process.env.MONGODB_URI || "").trim();
+  // Accept multiple env var names so Railway setups are less fragile
+  const uri = (
+    process.env.MONGODB_URI ||
+    process.env.MONGO_URL ||       // Railway Mongo service variable
+    process.env.MONGODB_URL ||     // optional fallback
+    ""
+  ).trim();
+
   if (!uri) {
-    console.error("Missing MONGODB_URI");
+    console.error("Missing Mongo connection string. Set MONGODB_URI (recommended) or MONGO_URL.");
     process.exit(1);
   }
 
@@ -67,9 +99,13 @@ async function start() {
 
   await mongoose.connect(uri, { dbName });
 
-  // Ensure indexes (including unique compound index)
-  const DJProfile = require("./models/DJProfile");
-  await DJProfile.syncIndexes();
+  // Index creation can fail under certain Mongo conditions. Don't hard-crash the API.
+  try {
+    const DJProfile = require("./models/DJProfile");
+    await DJProfile.syncIndexes();
+  } catch (e) {
+    console.warn("Index sync failed (continuing):", e?.message || e);
+  }
 
   const port = Number(process.env.PORT || 3000);
   app.listen(port, () => console.log(`DJ Database API listening on :${port}`));
