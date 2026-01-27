@@ -194,7 +194,59 @@
 
           <div class="form-group">
             <label for="state">State</label>
-            <input type="text" id="state">
+            <select id="state">
+              <option value="">Select state...</option>
+              <option value="Alabama">Alabama</option>
+              <option value="Alaska">Alaska</option>
+              <option value="Arizona">Arizona</option>
+              <option value="Arkansas">Arkansas</option>
+              <option value="California">California</option>
+              <option value="Colorado">Colorado</option>
+              <option value="Connecticut">Connecticut</option>
+              <option value="Delaware">Delaware</option>
+              <option value="Florida">Florida</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Hawaii">Hawaii</option>
+              <option value="Idaho">Idaho</option>
+              <option value="Illinois">Illinois</option>
+              <option value="Indiana">Indiana</option>
+              <option value="Iowa">Iowa</option>
+              <option value="Kansas">Kansas</option>
+              <option value="Kentucky">Kentucky</option>
+              <option value="Louisiana">Louisiana</option>
+              <option value="Maine">Maine</option>
+              <option value="Maryland">Maryland</option>
+              <option value="Massachusetts">Massachusetts</option>
+              <option value="Michigan">Michigan</option>
+              <option value="Minnesota">Minnesota</option>
+              <option value="Mississippi">Mississippi</option>
+              <option value="Missouri">Missouri</option>
+              <option value="Montana">Montana</option>
+              <option value="Nebraska">Nebraska</option>
+              <option value="Nevada">Nevada</option>
+              <option value="New Hampshire">New Hampshire</option>
+              <option value="New Jersey">New Jersey</option>
+              <option value="New Mexico">New Mexico</option>
+              <option value="New York">New York</option>
+              <option value="North Carolina">North Carolina</option>
+              <option value="North Dakota">North Dakota</option>
+              <option value="Ohio">Ohio</option>
+              <option value="Oklahoma">Oklahoma</option>
+              <option value="Oregon">Oregon</option>
+              <option value="Pennsylvania">Pennsylvania</option>
+              <option value="Rhode Island">Rhode Island</option>
+              <option value="South Carolina">South Carolina</option>
+              <option value="South Dakota">South Dakota</option>
+              <option value="Tennessee">Tennessee</option>
+              <option value="Texas">Texas</option>
+              <option value="Utah">Utah</option>
+              <option value="Vermont">Vermont</option>
+              <option value="Virginia">Virginia</option>
+              <option value="Washington">Washington</option>
+              <option value="West Virginia">West Virginia</option>
+              <option value="Wisconsin">Wisconsin</option>
+              <option value="Wyoming">Wyoming</option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -204,12 +256,26 @@
 
           <div class="form-group">
             <label for="experienceLevel">Experience Level</label>
-            <input type="text" id="experienceLevel" placeholder="e.g., 5 years +, 3 years, etc.">
+            <select id="experienceLevel">
+              <option value="">Select experience level...</option>
+              <option value="Under 1 year">Under 1 year</option>
+              <option value="2 years">2 years</option>
+              <option value="3 years">3 years</option>
+              <option value="4 years">4 years</option>
+              <option value="5 years +">5 years +</option>
+            </select>
           </div>
 
           <div class="form-group">
             <label for="age">Age *</label>
-            <input type="text" id="age" required placeholder="e.g., 25-35, 18-25, 35+">
+            <select id="age" required>
+              <option value="">Select age range...</option>
+              <option value="under 18">under 18</option>
+              <option value="18-25">18-25</option>
+              <option value="25-35">25-35</option>
+              <option value="35+">35+</option>
+              <option value="Prefer not to answer">Prefer not to answer</option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -223,8 +289,16 @@
           </div>
 
           <div class="form-group form-group-full">
-            <label for="heardAbout">Source</label>
-            <input type="text" id="heardAbout" placeholder="e.g., Instagram, referral, website">
+            <label for="heardAbout">How did you hear about us?</label>
+            <select id="heardAbout">
+              <option value="">Select source...</option>
+              <option value="Social Media (Facebook, Instagram, or TikTok)">Social Media (Facebook, Instagram, or TikTok)</option>
+              <option value="Online Ad">Online Ad</option>
+              <option value="Referral (friend or family member)">Referral (friend or family member)</option>
+              <option value="Previous Experience">Previous Experience</option>
+              <option value="Other">Other</option>
+            </select>
+            <input type="text" id="heardAboutOther" placeholder="Please specify..." style="display: none; margin-top: 8px;">
           </div>
         </div>
 
