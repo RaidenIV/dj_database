@@ -13,6 +13,37 @@ function normalizePhone(raw) {
   return digits;
 }
 
+const STATE_MAP = {
+  'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+  'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+  'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+  'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+  'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+  'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+  'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+  'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+  'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+  'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
+};
+
+function normalizeState(state) {
+  if (!state) return '';
+  const trimmed = String(state).trim();
+  const upper = trimmed.toUpperCase();
+  
+  // If it's an abbreviation, convert to full name
+  if (STATE_MAP[upper]) return STATE_MAP[upper];
+  
+  // If it's already a full name, capitalize it properly
+  const normalized = trimmed.toLowerCase();
+  for (const fullName of Object.values(STATE_MAP)) {
+    if (fullName.toLowerCase() === normalized) return fullName;
+  }
+  
+  // Return as-is with first letter capitalized if not found
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
+
 function normalizeProfileInput(body) {
   const stageName = String(body.stageName || "").trim();
   const email = String(body.email || "").trim();
@@ -22,7 +53,7 @@ function normalizeProfileInput(body) {
     stageName,
     fullName: String(body.fullName || "").trim(),
     city: String(body.city || "").trim(),
-    state: String(body.state || "").trim(),
+    state: normalizeState(body.state),
     phoneNumber: phoneDigits,
     experienceLevel: String(body.experienceLevel || "").trim(),
     age: String(body.age || "").trim(),
