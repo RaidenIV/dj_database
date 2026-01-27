@@ -41,35 +41,69 @@
         >
       </div>
 
-      <div class="controls">
-        <button class="primary" id="btnCreate" type="button">Create Profile</button>
-        <button id="btnLoadCsv" type="button">Load CSV</button>
-        <button id="btnSaveToServer" class="btn-save" type="button" disabled>Save</button>
-      </div>
-
       <input type="file" id="csvFile" accept=".csv" style="display:none;">
 
-      <!-- Server Info Card -->
-      <div class="search-card server-info-card">
-        <div class="server-header">
-          <h3 class="server-title">Server Connection</h3>
-          <div class="server-status-row">
-            <span id="serverDot" class="conn-dot conn-off" title="Server connection"></span>
-            <span id="serverStatus" class="conn-text">Disconnected</span>
-            <div id="adminBanner" class="admin-banner unauthorized" title="Admin token status">Unauthorized</div>
+      <!-- Server & Analytics Row -->
+      <div class="info-cards-row">
+        <!-- Server Info Card -->
+        <div class="search-card server-info-card">
+          <div class="server-header">
+            <h3 class="server-title">Server Connection</h3>
+            <div class="server-status-row">
+              <span id="serverDot" class="conn-dot conn-off" title="Server connection"></span>
+              <span id="serverStatus" class="conn-text">Disconnected</span>
+              <div id="adminBanner" class="admin-banner unauthorized" title="Admin token status">Unauthorized</div>
+            </div>
           </div>
+
+          <div class="token-input-section">
+            <label for="adminToken">Admin Token</label>
+            <div class="token-input-row">
+              <input type="password" id="adminToken" placeholder="Paste token (shared with your team)">
+              <button id="btnSaveToken" type="button">Save Token</button>
+            </div>
+          </div>
+
+          <div id="miniConsole" class="mini-console" aria-live="polite"></div>
         </div>
 
-        <div class="token-input-section">
-          <label for="adminToken">Admin Token</label>
-          <div class="token-input-row">
-            <input type="password" id="adminToken" placeholder="Paste token (shared with your team)">
-            <button id="btnSaveToken" type="button">Save Token</button>
+        <!-- Analytics Dashboard -->
+        <div class="search-card">
+          <div class="analytics-header">
+            <div>
+              <h2 class="section-title">Analytics Dashboard</h2>
+              <p class="section-subtitle">Customize which charts to display</p>
+            </div>
+            <button id="toggleAnalyticsBtn" class="toggle-analytics" type="button">Hide Dashboard</button>
+          </div>
+
+          <div id="analyticsContent" class="analytics-content">
+            <div class="chart-toggles">
+              <label class="checkbox-label"><input type="checkbox" id="showExperience" checked><span>Experience</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="showAge" checked><span>Age</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="showLocation" checked><span>Location</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="showReferral" checked><span>Referral</span></label>
+            </div>
+
+            <div class="graphs-grid">
+              <div class="graph-container" id="experienceContainer"><h3 class="graph-title">Experience</h3><canvas id="experienceChart"></canvas></div>
+              <div class="graph-container" id="ageContainer"><h3 class="graph-title">Age</h3><canvas id="ageChart"></canvas></div>
+              <div class="graph-container" id="locationContainer"><h3 class="graph-title">Location</h3><canvas id="locationChart"></canvas></div>
+              <div class="graph-container" id="referralContainer"><h3 class="graph-title">Referral</h3><canvas id="referralChart"></canvas></div>
+            </div>
           </div>
         </div>
-
-        <div id="miniConsole" class="mini-console" aria-live="polite"></div>
       </div>
+
+      <!-- Profiles Card -->
+      <div class="search-card profiles-card">
+        <div class="profiles-card-header">
+          <div class="controls">
+            <button class="primary" id="btnCreate" type="button">Create Profile</button>
+            <button id="btnLoadCsv" type="button">Load CSV</button>
+            <button id="btnSaveToServer" class="btn-save" type="button" disabled>Save</button>
+          </div>
+        </div>
 
       <div class="controls-row">
         <div class="search-card search-card-input">
@@ -118,34 +152,8 @@
         </div>
       </div>
 
-      <!-- Analytics Dashboard -->
-      <div class="search-card">
-        <div class="analytics-header">
-          <div>
-            <h2 class="section-title">Analytics Dashboard</h2>
-            <p class="section-subtitle">Customize which charts to display</p>
-          </div>
-          <button id="toggleAnalyticsBtn" class="toggle-analytics" type="button">Hide Dashboard</button>
-        </div>
-
-        <div id="analyticsContent" class="analytics-content">
-          <div class="chart-toggles">
-            <label class="checkbox-label"><input type="checkbox" id="showExperience" checked><span>Experience</span></label>
-            <label class="checkbox-label"><input type="checkbox" id="showAge" checked><span>Age</span></label>
-            <label class="checkbox-label"><input type="checkbox" id="showLocation" checked><span>Location</span></label>
-            <label class="checkbox-label"><input type="checkbox" id="showReferral" checked><span>Referral</span></label>
-          </div>
-
-          <div class="graphs-grid">
-            <div class="graph-container" id="experienceContainer"><h3 class="graph-title">Experience</h3><canvas id="experienceChart"></canvas></div>
-            <div class="graph-container" id="ageContainer"><h3 class="graph-title">Age</h3><canvas id="ageChart"></canvas></div>
-            <div class="graph-container" id="locationContainer"><h3 class="graph-title">Location</h3><canvas id="locationChart"></canvas></div>
-            <div class="graph-container" id="referralContainer"><h3 class="graph-title">Referral</h3><canvas id="referralChart"></canvas></div>
-          </div>
-        </div>
+        <div id="profilesContainer" class="profiles-grid size-medium"></div>
       </div>
-
-      <div id="profilesContainer" class="profiles-grid size-medium"></div>
     </div>
   </div>
 
