@@ -9,16 +9,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- External libs (allowed by CSP configured in server.js) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-  <!-- Use absolute paths so assets load regardless of URL path -->
-  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css?v=3">
 </head>
 <body>
+  <!-- Navigation Menu -->
   <div class="nav-dropdown" id="navDropdown">
-    <button class="nav-toggle" id="navToggle">Menu</button>
+    <button class="nav-toggle" id="navToggle" type="button">Menu</button>
     <div class="nav-menu">
       <a href="https://www.xodiamediagroup.com/" target="_top" rel="noopener">Home</a>
       <a href="https://www.xodiamediagroup.com/upcoming-events" target="_top" rel="noopener">Upcoming Events</a>
@@ -30,10 +29,17 @@
   <div class="container">
     <div class="main-card">
       <div class="main-card-header">
-        <div>
-          <h1>DJ Profile Database</h1>
+        <div class="header-left">
+          <div class="header-topline">
+            <h1>DJ Profile Database</h1>
+            <div id="adminBanner" class="admin-banner unauthorized" title="Admin token status">Unauthorized</div>
+          </div>
+
           <div class="subtitle" id="profileCount">Manage and organize DJ profiles</div>
+
+          <div id="miniConsole" class="mini-console" aria-live="polite"></div>
         </div>
+
         <img
           src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w"
           alt="Xodia Media Group"
@@ -42,21 +48,23 @@
       </div>
 
       <div class="controls">
-        <button class="primary" id="btnCreate">Create Profile</button>
-        <button id="btnExport">Export CSV</button>
-        <button id="btnImport">Import CSV</button>
+        <button class="primary" id="btnCreate" type="button">Create Profile</button>
+        <button id="btnExport" type="button">Export CSV</button>
+        <button id="btnLoadCsv" type="button">Load CSV</button>
+        <button id="btnSaveToServer" type="button" disabled>Save CSV to Server</button>
       </div>
 
-      <input type="file" id="csvImport" accept=".csv" style="display:none;">
+      <input type="file" id="csvFile" accept=".csv" style="display:none;">
 
+      <!-- Auth -->
       <div class="search-card">
         <div class="options-grid" style="align-items: end;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="adminToken">Admin Token (optional)</label>
-            <input type="text" id="adminToken" placeholder="Only required if ADMIN_TOKEN is set on the server">
+            <label for="adminToken">Admin Token</label>
+            <input type="text" id="adminToken" placeholder="Paste token (shared with your team)">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <button id="btnSaveToken">Save Token</button>
+            <button id="btnSaveToken" type="button">Save Token</button>
             <div id="serverStatus" class="status-message"></div>
           </div>
         </div>
@@ -109,28 +117,29 @@
         </div>
       </div>
 
+      <!-- Analytics Dashboard -->
       <div class="search-card">
         <div class="analytics-header">
           <div>
-            <h2 style="font-size: 18px; margin-bottom: 4px; font-weight: 600;">Analytics Dashboard</h2>
-            <p style="font-size: 12px; color: var(--muted); margin: 0;">Customize which charts to display</p>
+            <h2 class="section-title">Analytics Dashboard</h2>
+            <p class="section-subtitle">Customize which charts to display</p>
           </div>
-          <button id="toggleAnalyticsBtn" class="toggle-analytics">Hide Dashboard</button>
+          <button id="toggleAnalyticsBtn" class="toggle-analytics" type="button">Hide Dashboard</button>
         </div>
 
         <div id="analyticsContent" class="analytics-content">
           <div class="chart-toggles">
-            <label class="checkbox-label"><input type="checkbox" id="showExperience" checked><span>Experience Distribution</span></label>
-            <label class="checkbox-label"><input type="checkbox" id="showAge" checked><span>Age Distribution</span></label>
-            <label class="checkbox-label"><input type="checkbox" id="showLocation" checked><span>Location Distribution</span></label>
-            <label class="checkbox-label"><input type="checkbox" id="showReferral" checked><span>Referral Sources</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="showExperience" checked><span>Experience</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="showAge" checked><span>Age</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="showLocation" checked><span>Location</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="showReferral" checked><span>Referral</span></label>
           </div>
 
           <div class="graphs-grid">
-            <div class="graph-container" id="experienceContainer"><h3 class="graph-title">Experience Distribution</h3><canvas id="experienceChart"></canvas></div>
-            <div class="graph-container" id="ageContainer"><h3 class="graph-title">Age Distribution</h3><canvas id="ageChart"></canvas></div>
-            <div class="graph-container" id="locationContainer"><h3 class="graph-title">Location Distribution</h3><canvas id="locationChart"></canvas></div>
-            <div class="graph-container" id="referralContainer"><h3 class="graph-title">Referral Sources</h3><canvas id="referralChart"></canvas></div>
+            <div class="graph-container" id="experienceContainer"><h3 class="graph-title">Experience</h3><canvas id="experienceChart"></canvas></div>
+            <div class="graph-container" id="ageContainer"><h3 class="graph-title">Age</h3><canvas id="ageChart"></canvas></div>
+            <div class="graph-container" id="locationContainer"><h3 class="graph-title">Location</h3><canvas id="locationChart"></canvas></div>
+            <div class="graph-container" id="referralContainer"><h3 class="graph-title">Referral</h3><canvas id="referralChart"></canvas></div>
           </div>
         </div>
       </div>
@@ -144,12 +153,10 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title" id="modalTitle">Create Profile</h2>
-        <button class="close" id="modalClose" aria-label="Close">&times;</button>
+        <button class="close" id="modalClose" type="button" aria-label="Close">&times;</button>
       </div>
 
       <form id="profileForm">
-        <input type="hidden" id="profileId">
-
         <div class="form-grid">
           <div class="form-group">
             <label for="stageName">Stage Name *</label>
@@ -173,7 +180,7 @@
 
           <div class="form-group">
             <label for="phoneNumber">Phone Number</label>
-            <input type="text" id="phoneNumber">
+            <input type="text" id="phoneNumber" placeholder="(555)555-5555">
           </div>
 
           <div class="form-group">
@@ -195,6 +202,11 @@
             <label for="socialMedia">Social Media Links</label>
             <input type="text" id="socialMedia" placeholder="Instagram, Facebook, SoundCloud, etc.">
           </div>
+
+          <div class="form-group form-group-full">
+            <label for="heardAbout">Source</label>
+            <input type="text" id="heardAbout" placeholder="e.g., Instagram, referral, website">
+          </div>
         </div>
 
         <div class="form-actions">
@@ -205,6 +217,6 @@
     </div>
   </div>
 
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js?v=3"></script>
 </body>
 </html>
