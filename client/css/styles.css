@@ -90,7 +90,7 @@ body { padding: 20px; }
 @media (max-width: 768px) { .main-logo { max-width: 100px; } }
 
 h1 {
-  font-size: 32px;
+  font-size: 48px;
   font-weight: 700;
   margin: 0 0 6px;
   letter-spacing: 0.02em;
