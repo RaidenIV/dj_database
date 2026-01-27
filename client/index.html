@@ -74,7 +74,17 @@
               <h2 class="section-title">Analytics Dashboard</h2>
               <p class="section-subtitle">Customize which charts to display</p>
             </div>
-            <button id="toggleAnalyticsBtn" class="toggle-analytics" type="button">Hide Dashboard</button>
+            <div class="color-palette-selector">
+              <label for="colorPalette">Color Palette:</label>
+              <select id="colorPalette">
+                <option value="default">Default</option>
+                <option value="vibrant">Vibrant</option>
+                <option value="pastel">Pastel</option>
+                <option value="monochrome">Monochrome</option>
+                <option value="warm">Warm</option>
+                <option value="cool">Cool</option>
+              </select>
+            </div>
           </div>
 
           <div id="analyticsContent" class="analytics-content">
