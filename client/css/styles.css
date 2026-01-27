@@ -177,11 +177,12 @@ button.btn-save:disabled {
   display: grid;
   grid-template-columns: 2fr 3fr;
   gap: 16px;
+  margin-bottom: 0;
 }
 
 .info-cards-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 3fr;
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -278,7 +279,7 @@ button.btn-save:disabled {
 
 .graphs-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-top: 16px;
 }
