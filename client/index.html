@@ -12,7 +12,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-  <link rel="stylesheet" href="/css/styles.css?v=4">
+  <link rel="stylesheet" href="/css/styles.css?v=5">
 </head>
 <body>
   <!-- Navigation Menu -->
@@ -167,7 +167,7 @@
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Profile Modal -->
   <div id="profileModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -310,6 +310,19 @@
     </div>
   </div>
 
-  <script src="/js/app.js?v=4"></script>
+  <!-- Custom Confirmation Modal -->
+  <div id="confirmModal" class="modal confirm-modal">
+    <div class="modal-content confirm-modal-content">
+      <div class="confirm-icon">⚠️</div>
+      <h2 class="confirm-title" id="confirmTitle">Confirm Action</h2>
+      <p class="confirm-message" id="confirmMessage">Are you sure?</p>
+      <div class="confirm-actions">
+        <button type="button" id="confirmCancel" class="confirm-btn-cancel">Cancel</button>
+        <button type="button" id="confirmOk" class="confirm-btn-ok">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=5"></script>
 </body>
 </html>
