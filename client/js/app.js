@@ -1,10 +1,50 @@
 /* global Papa, Chart */
-
 (() => {
   const API_BASE = window.location.origin.replace(/\/$/, "");
   let ADMIN_TOKEN = (localStorage.getItem("djAdminToken") || "").trim();
 
   const $ = (id) => document.getElementById(id);
+
+  // ----------------------------
+  // Mini console + admin banner
+  // ----------------------------
+  const consoleEl = () => $("miniConsole");
+  const bannerEl = () => $("adminBanner");
+
+  function ts() {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const ss = String(d.getSeconds()).padStart(2, "0");
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  function logLine(message, kind = "info") {
+    const el = consoleEl();
+    if (!el) return;
+    const div = document.createElement("div");
+    div.className = `console-line console-${kind}`;
+    div.innerHTML = `<span class="console-ts">${ts()}</span>${escapeHtml(message)}`;
+    el.appendChild(div);
+    // keep last ~40 lines
+    while (el.childNodes.length > 40) el.removeChild(el.firstChild);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function setAdminBanner(state, text) {
+    const el = bannerEl();
+    if (!el) return;
+    el.classList.remove("authorized", "unauthorized");
+    el.classList.add(state === "authorized" ? "authorized" : "unauthorized");
+    el.textContent = text;
+  }
+
+  function setStatus(msg, kind) {
+    const el = $("serverStatus");
+    if (!el) return;
+    el.className = "status-message " + (kind || "");
+    el.textContent = msg || "";
+  }
 
   function authHeaders(extra) {
     const h = Object.assign({}, extra || {});
@@ -15,23 +55,46 @@
     return h;
   }
 
-  function setStatus(msg, kind) {
-    const el = $("serverStatus");
-    if (!el) return;
-    el.className = "status-message " + (kind || "");
-    el.textContent = msg || "";
-  }
-
   async function checkServerHealth() {
     try {
       const r = await fetch(API_BASE + "/health");
       if (!r.ok) throw new Error("Health check failed");
       const j = await r.json();
-      if (j && j.mongoState === 1) setStatus("Connected (MongoDB OK).", "success");
-      else setStatus("Server online (Mongo not fully connected yet).", "warning");
+      if (j && j.mongoState === 1) {
+        logLine("Server connected (MongoDB OK).", "ok");
+        setStatus("Connected", "success");
+      } else {
+        logLine("Server online (Mongo connecting).", "warn");
+        setStatus("Server online (Mongo connecting)", "warning");
+      }
       return true;
     } catch (_e) {
-      setStatus("Server not reachable.", "warning");
+      logLine("Server connection failed.", "red");
+      setStatus("Server not reachable", "warning");
+      return false;
+    }
+  }
+
+  async function checkAuthState() {
+    // Use /api/djs as the definitive admin-gated endpoint.
+    try {
+      const r = await fetch(API_BASE + "/api/djs", { headers: authHeaders() });
+      if (r.status === 401) {
+        setAdminBanner("unauthorized", "Unauthorized");
+        if (ADMIN_TOKEN) logLine("Unauthorized (token rejected).", "red");
+        else logLine("Unauthorized (token not set).", "warn");
+        return false;
+      }
+      if (!r.ok) {
+        setAdminBanner("unauthorized", "Error");
+        logLine("Auth check error (server responded " + r.status + ").", "warn");
+        return false;
+      }
+      setAdminBanner("authorized", "Admin mode");
+      logLine("Authorized (Admin mode enabled).", "ok");
+      return true;
+    } catch (_e) {
+      setAdminBanner("unauthorized", "Offline");
       return false;
     }
   }
@@ -39,14 +102,101 @@
   function saveAdminToken() {
     ADMIN_TOKEN = ($("adminToken").value || "").trim();
     localStorage.setItem("djAdminToken", ADMIN_TOKEN);
-    loadProfiles().then(() => {
+    logLine(ADMIN_TOKEN ? "Admin token saved." : "Admin token cleared.", "info");
+    // Refresh auth + data
+    (async () => {
+      await checkAuthState();
+      await loadProfiles();
       applyFilters();
       updateCharts();
-    });
+    })();
   }
 
   // ----------------------------
-  // State
+  // CSV load + explicit Save to Server
+  // ----------------------------
+  let pendingCsvFile = null;
+  let pendingCsvCount = 0;
+
+  function openCsvPicker() {
+    $("csvFile").click();
+  }
+
+  function setSaveCsvEnabled(on) {
+    const btn = $("btnSaveToServer");
+    btn.disabled = !on;
+  }
+
+  function handleCsvSelected(file) {
+    pendingCsvFile = null;
+    pendingCsvCount = 0;
+    setSaveCsvEnabled(false);
+
+    if (!file) return;
+
+    // Quick parse to count rows (local only) so you know what you're about to upload
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const rows = Array.isArray(results.data) ? results.data : [];
+        pendingCsvFile = file;
+        pendingCsvCount = rows.length;
+        setSaveCsvEnabled(true);
+        logLine(`CSV loaded locally: ${file.name} (${pendingCsvCount} rows). Click "Save CSV to Server".`, "blue");
+      },
+      error: (err) => {
+        logLine("CSV parse failed: " + (err?.message || "unknown error"), "red");
+      }
+    });
+  }
+
+  async function saveCsvToServer() {
+    if (!pendingCsvFile) {
+      logLine("No CSV loaded. Click "Load CSV" first.", "warn");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", pendingCsvFile);
+
+    logLine(`Uploading CSV to server (${pendingCsvCount} rows)…`, "info");
+
+    const r = await fetch(API_BASE + "/api/djs/import", {
+      method: "POST",
+      headers: authHeaders(),
+      body: fd
+    });
+
+    if (r.status === 401) {
+      logLine("Upload blocked: Unauthorized. Set Admin Token.", "red");
+      alert("Unauthorized. Paste Admin Token and click Save Token.");
+      return;
+    }
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      logLine("Upload failed: " + (t || r.status), "red");
+      alert("Upload failed: " + (t || r.status));
+      return;
+    }
+
+    const j = await r.json().catch(() => ({}));
+    logLine(`Upload complete. Upserted: ${j.upserted ?? "?"}, Updated: ${j.updated ?? "?"}, Skipped: ${j.skipped ?? "?"}.`, "ok");
+
+    // Clear pending
+    pendingCsvFile = null;
+    pendingCsvCount = 0;
+    setSaveCsvEnabled(false);
+    $("csvFile").value = "";
+
+    // Refresh list from server
+    await loadProfiles();
+    applyFilters();
+    updateCharts();
+  }
+
+  // ----------------------------
+  // State / helpers
   // ----------------------------
   let profiles = [];
   let currentEditId = null;
@@ -54,9 +204,26 @@
   function updateCountLabel() {
     const el = $("profileCount");
     if (!el) return;
-    el.textContent = profiles.length
-      ? `${profiles.length} DJ profile${profiles.length !== 1 ? "s" : ""} loaded`
-      : "Manage and organize DJ profiles";
+    if (profiles.length > 0) el.textContent = `${profiles.length} DJ profile${profiles.length !== 1 ? "s" : ""} loaded`;
+    else el.textContent = "Manage and organize DJ profiles";
+  }
+
+  function normalizePhoneDigits(raw) {
+    const digits = String(raw || "").replace(/\D/g, "");
+    if (digits.length === 11 && digits.startsWith("1")) return digits.slice(1);
+    return digits;
+  }
+
+  function formatPhone(raw) {
+    const digits = normalizePhoneDigits(raw);
+    if (digits.length === 10) return `(${digits.slice(0, 3)})${digits.slice(3, 6)}-${digits.slice(6)}`;
+    return String(raw || "");
+  }
+
+  function truncate(str, max = 44) {
+    const s = String(str || "");
+    if (s.length <= max) return s;
+    return s.slice(0, max - 1) + "…";
   }
 
   async function loadProfiles() {
@@ -66,21 +233,23 @@
         profiles = [];
         updateCountLabel();
         displayProfiles([]);
-        setStatus("Unauthorized: set Admin Token to view profiles.", "warning");
+        logLine("Profiles not loaded: Unauthorized.", "warn");
         return;
       }
       if (!r.ok) throw new Error("Load failed");
       profiles = await r.json();
       updateCountLabel();
+      logLine(`Profiles loaded: ${profiles.length}`, "info");
     } catch (_e) {
       profiles = [];
       updateCountLabel();
       displayProfiles([]);
+      logLine("Failed to load profiles.", "red");
     }
   }
 
   // ----------------------------
-  // Modal helpers
+  // Modal
   // ----------------------------
   function openCreateModal() {
     currentEditId = null;
@@ -99,11 +268,12 @@
     $("fullName").value = p.fullName || "";
     $("city").value = p.city || "";
     $("state").value = p.state || "";
-    $("phoneNumber").value = p.phoneNumber || "";
+    $("phoneNumber").value = formatPhone(p.phoneNumber || "");
     $("experienceLevel").value = p.experienceLevel || "";
     $("age").value = p.age || "";
     $("email").value = p.email || "";
     $("socialMedia").value = p.socialMedia || "";
+    $("heardAbout").value = p.heardAbout || "";
 
     $("profileModal").style.display = "block";
   }
@@ -118,30 +288,20 @@
   async function saveProfile(e) {
     e.preventDefault();
 
+    const phoneDigits = normalizePhoneDigits($("phoneNumber").value);
+
     const payload = {
       stageName: $("stageName").value.trim(),
       fullName: $("fullName").value.trim(),
       city: $("city").value.trim(),
       state: $("state").value.trim(),
-      phoneNumber: $("phoneNumber").value.trim(),
+      phoneNumber: phoneDigits,
       experienceLevel: $("experienceLevel").value.trim(),
       age: $("age").value.trim(),
       email: $("email").value.trim(),
       socialMedia: $("socialMedia").value.trim(),
-      heardAbout: ""
+      heardAbout: $("heardAbout").value.trim()
     };
-
-    // client-side dup guard
-    const dup = profiles.find(
-      (p) =>
-        p.id !== currentEditId &&
-        (p.stageName || "").toLowerCase() === payload.stageName.toLowerCase() &&
-        (p.email || "").toLowerCase() === payload.email.toLowerCase()
-    );
-    if (dup) {
-      alert(`A profile with stage name "${payload.stageName}" and email "${payload.email}" already exists.`);
-      return;
-    }
 
     const url = currentEditId ? `${API_BASE}/api/djs/${encodeURIComponent(currentEditId)}` : `${API_BASE}/api/djs`;
     const method = currentEditId ? "PUT" : "POST";
@@ -152,12 +312,22 @@
       body: JSON.stringify(payload)
     });
 
-    if (r.status === 401) return alert("Unauthorized. Set Admin Token.");
-    if (r.status === 409) return alert("Duplicate profile (stageName + email).");
+    if (r.status === 401) {
+      logLine("Save blocked: Unauthorized.", "red");
+      return alert("Unauthorized. Paste Admin Token and click Save Token.");
+    }
+    if (r.status === 409) {
+      logLine("Save failed: Duplicate profile (stageName + email).", "warn");
+      return alert("Duplicate profile (stageName + email).");
+    }
     if (!r.ok) {
       const t = await r.text().catch(() => "");
+      logLine("Save failed: " + (t || r.status), "red");
       return alert("Save failed: " + (t || r.status));
     }
+
+    if (method === "POST") logLine("New profile created.", "blue");
+    else logLine("Profile saved.", "blue");
 
     await loadProfiles();
     applyFilters();
@@ -173,12 +343,17 @@
       headers: authHeaders()
     });
 
-    if (r.status === 401) return alert("Unauthorized. Set Admin Token.");
+    if (r.status === 401) {
+      logLine("Delete blocked: Unauthorized.", "red");
+      return alert("Unauthorized. Paste Admin Token and click Save Token.");
+    }
     if (!r.ok) {
       const t = await r.text().catch(() => "");
+      logLine("Delete failed: " + (t || r.status), "red");
       return alert("Delete failed: " + (t || r.status));
     }
 
+    logLine("Profile deleted.", "red");
     await loadProfiles();
     applyFilters();
     updateCharts();
@@ -215,12 +390,24 @@
     const displayCount = $("displayCount").value;
 
     let filtered = profiles.filter((p) => {
-      const fields = [p.stageName, p.fullName, p.city, p.state, p.email, p.phoneNumber].filter(Boolean).join(" ").toLowerCase();
+      const fields = [
+        p.stageName,
+        p.fullName,
+        p.city,
+        p.state,
+        p.email,
+        p.phoneNumber
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
       return fields.includes(searchTerm);
     });
 
     filtered = sortProfiles(filtered, sortBy);
+
     if (displayCount !== "all") filtered = filtered.slice(0, parseInt(displayCount, 10));
+
     displayProfiles(filtered);
   }
 
@@ -246,14 +433,19 @@
         <div class="empty-state">
           <div class="empty-state-icon">🎧</div>
           <div class="empty-state-text">No DJ Profiles</div>
-          <div class="empty-state-hint">Create your first profile or import a CSV file to get started</div>
+          <div class="empty-state-hint">Load a CSV and click "Save CSV to Server", or create a profile.</div>
         </div>
       `;
       return;
     }
 
     c.innerHTML = arr
-      .map((p) => `
+      .map((p) => {
+        const phoneDisp = p.phoneNumber ? formatPhone(p.phoneNumber) : "";
+        const socialDisp = p.socialMedia ? truncate(p.socialMedia, 46) : "";
+        const sourceDisp = p.heardAbout ? truncate(p.heardAbout, 34) : "";
+
+        return `
         <div class="profile-card">
           <div class="profile-info">
             <div class="stage-name">${escapeHtml(p.stageName || "")}</div>
@@ -264,45 +456,57 @@
               ${(p.city || p.state) ? `
                 <div class="profile-detail">
                   <span class="detail-label">Location:</span>
-                  <span>${escapeHtml([p.city, p.state].filter(Boolean).join(", ") || "N/A")}</span>
+                  <span class="detail-value">${escapeHtml([p.city, p.state].filter(Boolean).join(", ") || "N/A")}</span>
                 </div>` : ""
               }
-              ${p.phoneNumber ? `
+
+              ${phoneDisp ? `
                 <div class="profile-detail">
                   <span class="detail-label">Phone:</span>
-                  <span>${escapeHtml(p.phoneNumber)}</span>
+                  <span class="detail-value">${escapeHtml(phoneDisp)}</span>
                 </div>` : ""
               }
+
               ${p.experienceLevel ? `
                 <div class="profile-detail">
                   <span class="detail-label">Experience:</span>
-                  <span>${escapeHtml(p.experienceLevel)}</span>
+                  <span class="detail-value">${escapeHtml(p.experienceLevel)}</span>
                 </div>` : ""
               }
+
               <div class="profile-detail">
                 <span class="detail-label">Age:</span>
-                <span>${escapeHtml(p.age || "")}</span>
+                <span class="detail-value">${escapeHtml(p.age || "")}</span>
               </div>
+
               <div class="profile-detail">
                 <span class="detail-label">Email:</span>
-                <span>${escapeHtml(p.email || "")}</span>
+                <span class="detail-value">${escapeHtml(p.email || "")}</span>
               </div>
-              ${p.socialMedia ? `
+
+              ${socialDisp ? `
                 <div class="profile-detail">
                   <span class="detail-label">Social:</span>
-                  <span>${escapeHtml(p.socialMedia)}</span>
+                  <span class="detail-value truncate" title="${escapeHtml(p.socialMedia || "")}">${escapeHtml(socialDisp)}</span>
+                </div>` : ""
+              }
+
+              ${sourceDisp ? `
+                <div class="profile-detail">
+                  <span class="detail-label">Source:</span>
+                  <span class="detail-value truncate" title="${escapeHtml(p.heardAbout || "")}">${escapeHtml(sourceDisp)}</span>
                 </div>` : ""
               }
             </div>
 
             <div class="divider"></div>
             <div class="profile-actions">
-              <button data-action="edit" data-id="${p.id}">Update</button>
-              <button data-action="delete" data-id="${p.id}">Delete</button>
+              <button type="button" data-action="edit" data-id="${p.id}">Update</button>
+              <button type="button" data-action="delete" data-id="${p.id}">Delete</button>
             </div>
           </div>
-        </div>
-      `)
+        </div>`;
+      })
       .join("");
 
     c.querySelectorAll("button[data-action]").forEach((btn) => {
@@ -316,55 +520,7 @@
   }
 
   // ----------------------------
-  // CSV import/export
-  // ----------------------------
-  async function exportCSV() {
-    if (!profiles.length) return alert("No profiles to export!");
-
-    const r = await fetch(API_BASE + "/api/djs/export.csv", { headers: authHeaders() });
-    if (r.status === 401) return alert("Unauthorized. Set Admin Token.");
-    if (!r.ok) {
-      const t = await r.text().catch(() => "");
-      return alert("Export failed: " + (t || r.status));
-    }
-
-    const blob = await r.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `dj-profiles-export-${Date.now()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  async function importCSV(file) {
-    if (!file) return;
-
-    const fd = new FormData();
-    fd.append("file", file);
-
-    const r = await fetch(API_BASE + "/api/djs/import", {
-      method: "POST",
-      headers: authHeaders(),
-      body: fd
-    });
-
-    if (r.status === 401) return alert("Unauthorized. Set Admin Token.");
-    if (!r.ok) {
-      const t = await r.text().catch(() => "");
-      return alert("Import failed: " + (t || r.status));
-    }
-
-    await loadProfiles();
-    applyFilters();
-    updateCharts();
-    alert("Import complete.");
-  }
-
-  // ----------------------------
-  // Charts (same as before)
+  // Charts (unchanged)
   // ----------------------------
   let chartInstances = {};
 
@@ -414,7 +570,6 @@
       .reduce((o, [k, v]) => ((o[k] = v), o), {});
     createChart("locationChart", topStates, "bar");
 
-    // heardAbout is present in schema but not in modal UI
     const refCounts = {};
     profiles.forEach((p) => {
       if (p.heardAbout) {
@@ -467,12 +622,19 @@
 
     chartInstances[canvasId] = new Chart(ctx, {
       type,
-      data: { labels, datasets: [{ label: "Count", data: values, backgroundColor: brightColors, borderColor: borderColors, borderWidth: 2 }] },
+      data: {
+        labels,
+        datasets: [{ label: "Count", data: values, backgroundColor: brightColors, borderColor: borderColors, borderWidth: 2 }]
+      },
       options: {
         responsive: true,
         maintainAspectRatio: true,
         plugins: {
-          legend: { display: type !== "bar", position: "bottom", labels: { color: "#f2f2f4", font: { family: "Rajdhani", size: 12 }, padding: 12 } },
+          legend: {
+            display: type !== "bar",
+            position: "bottom",
+            labels: { color: "#f2f2f4", font: { family: "Rajdhani", size: 12 }, padding: 12 }
+          },
           title: { display: false }
         },
         scales: isBar
@@ -486,7 +648,7 @@
   }
 
   // ----------------------------
-  // Navigation
+  // Navigation menu
   // ----------------------------
   function setupNavigation() {
     const navDropdown = $("navDropdown");
@@ -502,20 +664,24 @@
   }
 
   // ----------------------------
-  // Wire UI
+  // Wiring
   // ----------------------------
   function wireUI() {
     $("adminToken").value = ADMIN_TOKEN;
-    $("btnSaveToken").addEventListener("click", saveAdminToken);
+
+    $("btnSaveToken").addEventListener("click", (e) => {
+      e.preventDefault();
+      saveAdminToken();
+    });
 
     $("btnCreate").addEventListener("click", openCreateModal);
     $("btnExport").addEventListener("click", exportCSV);
-    $("btnImport").addEventListener("click", () => $("csvImport").click());
+    $("btnLoadCsv").addEventListener("click", openCsvPicker);
+    $("btnSaveToServer").addEventListener("click", saveCsvToServer);
 
-    $("csvImport").addEventListener("change", async (e) => {
+    $("csvFile").addEventListener("change", (e) => {
       const f = e.target.files && e.target.files[0];
-      await importCSV(f);
-      e.target.value = "";
+      handleCsvSelected(f);
     });
 
     $("searchInput").addEventListener("input", applyFilters);
@@ -533,18 +699,55 @@
     $("btnCancel").addEventListener("click", closeModal);
     $("profileForm").addEventListener("submit", saveProfile);
 
+    // Phone formatting on blur
+    $("phoneNumber").addEventListener("blur", () => {
+      $("phoneNumber").value = formatPhone($("phoneNumber").value);
+    });
+
     $("profileModal").addEventListener("click", (e) => {
       if (e.target && e.target.id === "profileModal") closeModal();
     });
   }
 
+  // Export CSV (server-side)
+  async function exportCSV() {
+    if (!profiles.length) return alert("No profiles to export!");
+
+    const r = await fetch(API_BASE + "/api/djs/export.csv", { headers: authHeaders() });
+    if (r.status === 401) {
+      logLine("Export blocked: Unauthorized.", "red");
+      return alert("Unauthorized. Paste Admin Token and click Save Token.");
+    }
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      logLine("Export failed: " + (t || r.status), "red");
+      return alert("Export failed: " + (t || r.status));
+    }
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dj-profiles-export-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    logLine("Exported CSV.", "ok");
+  }
+
   window.addEventListener("DOMContentLoaded", async () => {
+    // initial lines
+    logLine("DJ Database loaded.", "info");
+
     wireUI();
     setupNavigation();
     updateCardSize();
     updateChartVisibility();
 
     await checkServerHealth();
+    await checkAuthState();
     await loadProfiles();
     applyFilters();
     updateCharts();
