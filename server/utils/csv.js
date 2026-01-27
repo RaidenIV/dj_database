@@ -1,35 +1,4 @@
-const { stringify } = require("csv-stringify/sync");
 const { parse } = require("csv-parse/sync");
-
-const CSV_COLUMNS = [
-  "Stage Name",
-  "Name (First & Last)",
-  "City",
-  "State",
-  "Phone Number",
-  "Experience Level",
-  "Age",
-  "Email",
-  "Social Media Links",
-  "How did you hear about us?"
-];
-
-function toCsv(profiles) {
-  const records = profiles.map((p) => ({
-    "Stage Name": p.stageName || "",
-    "Name (First & Last)": p.fullName || "",
-    "City": p.city || "",
-    "State": p.state || "",
-    "Phone Number": p.phoneNumber || "",
-    "Experience Level": p.experienceLevel || "",
-    "Age": p.age || "",
-    "Email": p.email || "",
-    "Social Media Links": p.socialMedia || "",
-    "How did you hear about us?": p.heardAbout || ""
-  }));
-
-  return stringify(records, { header: true, columns: CSV_COLUMNS });
-}
 
 function pick(row, keys) {
   for (const k of keys) {
@@ -69,4 +38,4 @@ function parseCsv(buffer) {
   return out;
 }
 
-module.exports = { toCsv, parseCsv };
+module.exports = { parseCsv };
