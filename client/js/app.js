@@ -153,7 +153,7 @@
 
   async function saveCsvToServer() {
     if (!pendingCsvFile) {
-      logLine("No CSV loaded. Click "Load CSV" first.", "warn");
+      logLine('No CSV loaded. Click "Load CSV" first.', "warn");
       return;
     }
 
