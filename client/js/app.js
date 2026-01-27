@@ -5,6 +5,66 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // Custom confirmation modal
+  function customConfirm(message, options = {}) {
+    return new Promise((resolve) => {
+      const modal = $("confirmModal");
+      const title = $("confirmTitle");
+      const messageEl = $("confirmMessage");
+      const okBtn = $("confirmOk");
+      const cancelBtn = $("confirmCancel");
+
+      // Set content
+      title.textContent = options.title || "Confirm Action";
+      messageEl.textContent = message;
+      
+      // Set button styles
+      okBtn.classList.remove("danger");
+      if (options.danger) {
+        okBtn.classList.add("danger");
+      }
+      
+      // Set button text
+      okBtn.textContent = options.okText || "Confirm";
+      cancelBtn.textContent = options.cancelText || "Cancel";
+
+      // Show modal
+      modal.style.display = "flex";
+
+      // Handle OK
+      const handleOk = () => {
+        cleanup();
+        resolve(true);
+      };
+
+      // Handle Cancel
+      const handleCancel = () => {
+        cleanup();
+        resolve(false);
+      };
+
+      // Cleanup function
+      const cleanup = () => {
+        modal.style.display = "none";
+        okBtn.removeEventListener("click", handleOk);
+        cancelBtn.removeEventListener("click", handleCancel);
+        modal.removeEventListener("click", handleBackdropClick);
+      };
+
+      // Handle backdrop click
+      const handleBackdropClick = (e) => {
+        if (e.target === modal) {
+          handleCancel();
+        }
+      };
+
+      // Add event listeners
+      okBtn.addEventListener("click", handleOk);
+      cancelBtn.addEventListener("click", handleCancel);
+      modal.addEventListener("click", handleBackdropClick);
+    });
+  }
+
   // State normalization map
   const STATE_MAP = {
     'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
@@ -377,6 +437,15 @@
       heardAboutValue = $("heardAboutOther").value.trim();
     }
 
+    // Confirm update if editing
+    if (currentEditId) {
+      const confirmed = await customConfirm(
+        "Are you sure you want to update this profile?",
+        { title: "Update Profile", okText: "Update", cancelText: "Cancel" }
+      );
+      if (!confirmed) return;
+    }
+
     const payload = {
       stageName: $("stageName").value.trim(),
       fullName: $("fullName").value.trim(),
@@ -389,12 +458,6 @@
       socialMedia: $("socialMedia").value.trim(),
       heardAbout: heardAboutValue
     };
-
-    // Confirm update if editing
-    if (currentEditId) {
-      const confirmUpdate = confirm("Are you sure you want to update this profile?");
-      if (!confirmUpdate) return;
-    }
 
     const url = currentEditId ? `${API_BASE}/api/djs/${encodeURIComponent(currentEditId)}` : `${API_BASE}/api/djs`;
     const method = currentEditId ? "PUT" : "POST";
@@ -429,7 +492,11 @@
   }
 
   async function deleteProfile(id) {
-    if (!confirm("Are you sure you want to delete this profile?")) return;
+    const confirmed = await customConfirm(
+      "This action cannot be undone. Are you sure you want to delete this profile?",
+      { title: "Delete Profile", okText: "Delete", cancelText: "Cancel", danger: true }
+    );
+    if (!confirmed) return;
 
     const r = await fetch(`${API_BASE}/api/djs/${encodeURIComponent(id)}`, {
       method: "DELETE",
@@ -601,7 +668,6 @@
       })
       .join("");
 
-    // Add click handlers for buttons
     c.querySelectorAll("button[data-action]").forEach((btn) => {
       const action = btn.getAttribute("data-action");
       const id = btn.getAttribute("data-id");
