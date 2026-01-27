@@ -78,19 +78,6 @@ body { padding: 20px; }
   border-color: rgba(239, 68, 68, 0.85);
 }
 
-.mini-console {
-  background: #0b0b0c;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.35;
-  max-height: 92px;
-  overflow: auto;
-  margin: 0;
-}
-
 .console-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .console-ts { color: rgba(255,255,255,0.45); margin-right: 8px; }
 .console-info { color: rgba(255,255,255,0.85); }
@@ -209,6 +196,8 @@ button.btn-save:disabled {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .section-title {
@@ -223,10 +212,24 @@ button.btn-save:disabled {
   margin: 0;
 }
 
-.toggle-analytics { padding: 8px 16px; font-size: 13px; }
+.color-palette-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-.analytics-content { display: block; transition: all 0.3s ease; }
-.analytics-content.hidden { display: none; }
+.color-palette-selector label {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.color-palette-selector select {
+  min-width: 140px;
+}
+
+.analytics-content { display: block; }
 
 .chart-toggles {
   display: flex;
@@ -329,7 +332,7 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
 }
 
-.profiles-grid { display: grid; gap: 16px; margin-top: 0; }
+.profiles-grid { display: grid; gap: 16px; margin-top: 16px; }
 .profiles-grid.size-small { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 .profiles-grid.size-medium { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 .profiles-grid.size-large { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
@@ -643,6 +646,8 @@ input:focus {
 /* Token card layout */
 .server-info-card {
   padding: 16px !important;
+  display: flex;
+  flex-direction: column;
 }
 
 .server-header {
@@ -675,6 +680,20 @@ input:focus {
   margin-bottom: 8px !important;
   font-weight: 600;
   font-size: 12px;
+}
+
+.mini-console {
+  background: #0b0b0c;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow: auto;
+  margin: 0;
+  flex: 1;
+  min-height: 100px;
 }
 
 .conn-dot{
