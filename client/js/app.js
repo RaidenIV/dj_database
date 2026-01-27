@@ -5,6 +5,39 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // State normalization map
+  const STATE_MAP = {
+    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+    'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+    'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+    'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+    'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+    'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+    'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+    'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+    'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+    'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'
+  };
+
+  function normalizeState(state) {
+    if (!state) return '';
+    const trimmed = String(state).trim();
+    const upper = trimmed.toUpperCase();
+    
+    // If it's an abbreviation, convert to full name
+    if (STATE_MAP[upper]) return STATE_MAP[upper];
+    
+    // If it's already a full name, capitalize it properly
+    const normalized = trimmed.toLowerCase();
+    for (const fullName of Object.values(STATE_MAP)) {
+      if (fullName.toLowerCase() === normalized) return fullName;
+    }
+    
+    // Return as-is with first letter capitalized if not found
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+  }
+
+
   // ----------------------------
   // Mini console + admin banner
   // ----------------------------
@@ -258,6 +291,11 @@
       }
       if (!r.ok) throw new Error("Load failed");
       profiles = await r.json();
+      // Normalize states in loaded profiles
+      profiles = profiles.map(p => ({
+        ...p,
+        state: normalizeState(p.state)
+      }));
       updateCountLabel();
       logLine(`Profiles loaded: ${profiles.length}`, "info");
     } catch (_e) {
@@ -275,6 +313,7 @@
     currentEditId = null;
     $("modalTitle").textContent = "Create Profile";
     $("profileForm").reset();
+    $("heardAboutOther").style.display = "none";
     $("profileModal").style.display = "block";
   }
 
@@ -293,7 +332,29 @@
     $("age").value = p.age || "";
     $("email").value = p.email || "";
     $("socialMedia").value = p.socialMedia || "";
-    $("heardAbout").value = p.heardAbout || "";
+    
+    // Handle heardAbout with Other option
+    const heardAbout = p.heardAbout || "";
+    const standardOptions = [
+      "Social Media (Facebook, Instagram, or TikTok)",
+      "Online Ad",
+      "Referral (friend or family member)",
+      "Previous Experience"
+    ];
+    
+    if (standardOptions.includes(heardAbout)) {
+      $("heardAbout").value = heardAbout;
+      $("heardAboutOther").style.display = "none";
+      $("heardAboutOther").value = "";
+    } else if (heardAbout) {
+      $("heardAbout").value = "Other";
+      $("heardAboutOther").style.display = "block";
+      $("heardAboutOther").value = heardAbout;
+    } else {
+      $("heardAbout").value = "";
+      $("heardAboutOther").style.display = "none";
+      $("heardAboutOther").value = "";
+    }
 
     $("profileModal").style.display = "block";
   }
@@ -309,19 +370,31 @@
     e.preventDefault();
 
     const phoneDigits = normalizePhoneDigits($("phoneNumber").value);
+    
+    // Handle heardAbout with Other option
+    let heardAboutValue = $("heardAbout").value.trim();
+    if (heardAboutValue === "Other") {
+      heardAboutValue = $("heardAboutOther").value.trim();
+    }
 
     const payload = {
       stageName: $("stageName").value.trim(),
       fullName: $("fullName").value.trim(),
       city: $("city").value.trim(),
-      state: $("state").value.trim(),
+      state: normalizeState($("state").value.trim()),
       phoneNumber: phoneDigits,
       experienceLevel: $("experienceLevel").value.trim(),
       age: $("age").value.trim(),
       email: $("email").value.trim(),
       socialMedia: $("socialMedia").value.trim(),
-      heardAbout: $("heardAbout").value.trim()
+      heardAbout: heardAboutValue
     };
+
+    // Confirm update if editing
+    if (currentEditId) {
+      const confirmUpdate = confirm("Are you sure you want to update this profile?");
+      if (!confirmUpdate) return;
+    }
 
     const url = currentEditId ? `${API_BASE}/api/djs/${encodeURIComponent(currentEditId)}` : `${API_BASE}/api/djs`;
     const method = currentEditId ? "PUT" : "POST";
@@ -528,6 +601,7 @@
       })
       .join("");
 
+    // Add click handlers for buttons
     c.querySelectorAll("button[data-action]").forEach((btn) => {
       const action = btn.getAttribute("data-action");
       const id = btn.getAttribute("data-id");
@@ -535,6 +609,17 @@
         if (action === "edit") openEditModal(id);
         if (action === "delete") deleteProfile(id);
       });
+    });
+    
+    // Add double-click handler to profile cards
+    c.querySelectorAll(".profile-card").forEach((card) => {
+      const editBtn = card.querySelector("button[data-action='edit']");
+      if (editBtn) {
+        const id = editBtn.getAttribute("data-id");
+        card.addEventListener("dblclick", () => {
+          openEditModal(id);
+        });
+      }
     });
   }
 
@@ -853,6 +938,17 @@
     // Phone formatting on blur
     $("phoneNumber").addEventListener("blur", () => {
       $("phoneNumber").value = formatPhone($("phoneNumber").value);
+    });
+
+    // Show/hide heardAboutOther field based on dropdown selection
+    $("heardAbout").addEventListener("change", () => {
+      const otherField = $("heardAboutOther");
+      if ($("heardAbout").value === "Other") {
+        otherField.style.display = "block";
+      } else {
+        otherField.style.display = "none";
+        otherField.value = "";
+      }
     });
 
     $("profileModal").addEventListener("click", (e) => {
