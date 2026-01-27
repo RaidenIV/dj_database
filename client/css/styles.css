@@ -50,8 +50,6 @@ body { padding: 20px; }
 /* Header enhancements */
 .header-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
-.header-topline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
 .admin-banner {
   font-size: 12px;
   font-weight: 700;
@@ -99,7 +97,7 @@ body { padding: 20px; }
 h1 {
   font-size: 32px;
   font-weight: 700;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
   letter-spacing: 0.02em;
 }
 
@@ -434,7 +432,8 @@ label {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="password"] {
   width: 100%;
   border: 1px solid var(--line);
   background: #0f0f12;
