@@ -31,9 +31,7 @@
       <div class="main-card-header">
         <div class="header-left">
           <h1>DJ Profile Database</h1>
-          <div class="subtitle" id="adminStatusLine">Unauthorized</div>
-          <div id="adminBanner" class="admin-banner unauthorized" title="Admin token status">Unauthorized</div>
-          <div id="miniConsole" class="mini-console" aria-live="polite"></div>
+          <p class="subtitle">A database for in depth analysis of collected DJ information</p>
         </div>
 
         <img
@@ -44,24 +42,33 @@
       </div>
 
       <div class="controls">
-        <button class="primary" id="btnCreate" type="button">Create Profile</button>        <button id="btnLoadCsv" type="button">Load CSV</button>
-        <button id="btnSaveToServer" type="button" disabled>Save</button>
+        <button class="primary" id="btnCreate" type="button">Create Profile</button>
+        <button id="btnLoadCsv" type="button">Load CSV</button>
+        <button id="btnSaveToServer" class="btn-save" type="button" disabled>Save</button>
       </div>
 
       <input type="file" id="csvFile" accept=".csv" style="display:none;">
 
-      <!-- Auth -->
-      <div class="search-card token-card">
-        <div class="token-label-row">
-          <label for="adminToken">Admin Token</label>
-          <span id="serverDot" class="conn-dot conn-off" title="Server connection"></span>
-          <span id="serverStatus" class="conn-text">Disconnected</span>
+      <!-- Server Info Card -->
+      <div class="search-card server-info-card">
+        <div class="server-header">
+          <h3 class="server-title">Server Connection</h3>
+          <div class="server-status-row">
+            <span id="serverDot" class="conn-dot conn-off" title="Server connection"></span>
+            <span id="serverStatus" class="conn-text">Disconnected</span>
+            <div id="adminBanner" class="admin-banner unauthorized" title="Admin token status">Unauthorized</div>
+          </div>
         </div>
 
-        <div class="token-input-row">
-          <input type="password" id="adminToken" placeholder="Paste token (shared with your team)" maxlength="70">
-          <button id="btnSaveToken" type="button">Save Token</button>
+        <div class="token-input-section">
+          <label for="adminToken">Admin Token</label>
+          <div class="token-input-row">
+            <input type="password" id="adminToken" placeholder="Paste token (shared with your team)">
+            <button id="btnSaveToken" type="button">Save Token</button>
+          </div>
         </div>
+
+        <div id="miniConsole" class="mini-console" aria-live="polite"></div>
       </div>
 
       <div class="controls-row">
