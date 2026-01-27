@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const DJProfile = require("../models/DJProfile");
-const { toCsv, parseCsv } = require("../utils/csv");
+const { parseCsv } = require("../utils/csv");
 const { requireAdmin, allowPublicCreate } = require("../middleware/requireAdmin");
 
 const router = express.Router();
