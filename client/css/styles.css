@@ -329,7 +329,7 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
 }
 
-.profiles-grid { display: grid; gap: 16px; }
+.profiles-grid { display: grid; gap: 16px; margin-top: 0; }
 .profiles-grid.size-small { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 .profiles-grid.size-medium { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
 .profiles-grid.size-large { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
