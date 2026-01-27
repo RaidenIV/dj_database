@@ -236,6 +236,16 @@
     return s.slice(0, max - 1) + "…";
   }
 
+  function capitalizeName(name) {
+    return String(name || "")
+      .split(" ")
+      .map(word => {
+        if (!word) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(" ");
+  }
+
   async function loadProfiles() {
     try {
       const r = await fetch(API_BASE + "/api/djs", { headers: authHeaders() });
@@ -459,7 +469,7 @@
         <div class="profile-card">
           <div class="profile-info">
             <div class="stage-name">${escapeHtml(p.stageName || "")}</div>
-            <div class="legal-name">${escapeHtml(p.fullName || "")}</div>
+            <div class="legal-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
             <div class="divider"></div>
 
             <div class="profile-details">
@@ -533,18 +543,6 @@
   // ----------------------------
   let chartInstances = {};
 
-  function toggleAnalytics() {
-    const content = $("analyticsContent");
-    const btn = $("toggleAnalyticsBtn");
-    if (content.classList.contains("hidden")) {
-      content.classList.remove("hidden");
-      btn.textContent = "Hide Dashboard";
-    } else {
-      content.classList.add("hidden");
-      btn.textContent = "Show Dashboard";
-    }
-  }
-
   function updateChartVisibility() {
     $("experienceContainer").style.display = $("showExperience").checked ? "block" : "none";
     $("ageContainer").style.display = $("showAge").checked ? "block" : "none";
@@ -591,6 +589,171 @@
     createChart("referralChart", refCounts, "pie");
   }
 
+  const colorPalettes = {
+    default: {
+      bg: [
+        "rgba(59, 130, 246, 0.8)",
+        "rgba(16, 185, 129, 0.8)",
+        "rgba(239, 68, 68, 0.8)",
+        "rgba(245, 158, 11, 0.8)",
+        "rgba(168, 85, 247, 0.8)",
+        "rgba(236, 72, 153, 0.8)",
+        "rgba(6, 182, 212, 0.8)",
+        "rgba(132, 204, 22, 0.8)",
+        "rgba(251, 146, 60, 0.8)",
+        "rgba(99, 102, 241, 0.8)"
+      ],
+      border: [
+        "rgba(59, 130, 246, 1)",
+        "rgba(16, 185, 129, 1)",
+        "rgba(239, 68, 68, 1)",
+        "rgba(245, 158, 11, 1)",
+        "rgba(168, 85, 247, 1)",
+        "rgba(236, 72, 153, 1)",
+        "rgba(6, 182, 212, 1)",
+        "rgba(132, 204, 22, 1)",
+        "rgba(251, 146, 60, 1)",
+        "rgba(99, 102, 241, 1)"
+      ]
+    },
+    vibrant: {
+      bg: [
+        "rgba(255, 0, 110, 0.8)",
+        "rgba(0, 255, 255, 0.8)",
+        "rgba(255, 215, 0, 0.8)",
+        "rgba(50, 205, 50, 0.8)",
+        "rgba(255, 105, 180, 0.8)",
+        "rgba(138, 43, 226, 0.8)",
+        "rgba(255, 140, 0, 0.8)",
+        "rgba(0, 191, 255, 0.8)",
+        "rgba(255, 69, 0, 0.8)",
+        "rgba(154, 205, 50, 0.8)"
+      ],
+      border: [
+        "rgba(255, 0, 110, 1)",
+        "rgba(0, 255, 255, 1)",
+        "rgba(255, 215, 0, 1)",
+        "rgba(50, 205, 50, 1)",
+        "rgba(255, 105, 180, 1)",
+        "rgba(138, 43, 226, 1)",
+        "rgba(255, 140, 0, 1)",
+        "rgba(0, 191, 255, 1)",
+        "rgba(255, 69, 0, 1)",
+        "rgba(154, 205, 50, 1)"
+      ]
+    },
+    pastel: {
+      bg: [
+        "rgba(179, 205, 255, 0.8)",
+        "rgba(179, 229, 252, 0.8)",
+        "rgba(255, 204, 203, 0.8)",
+        "rgba(255, 229, 180, 0.8)",
+        "rgba(230, 190, 255, 0.8)",
+        "rgba(255, 198, 224, 0.8)",
+        "rgba(198, 246, 213, 0.8)",
+        "rgba(255, 243, 176, 0.8)",
+        "rgba(255, 224, 178, 0.8)",
+        "rgba(209, 196, 233, 0.8)"
+      ],
+      border: [
+        "rgba(179, 205, 255, 1)",
+        "rgba(179, 229, 252, 1)",
+        "rgba(255, 204, 203, 1)",
+        "rgba(255, 229, 180, 1)",
+        "rgba(230, 190, 255, 1)",
+        "rgba(255, 198, 224, 1)",
+        "rgba(198, 246, 213, 1)",
+        "rgba(255, 243, 176, 1)",
+        "rgba(255, 224, 178, 1)",
+        "rgba(209, 196, 233, 1)"
+      ]
+    },
+    monochrome: {
+      bg: [
+        "rgba(100, 100, 100, 0.8)",
+        "rgba(150, 150, 150, 0.8)",
+        "rgba(200, 200, 200, 0.8)",
+        "rgba(75, 75, 75, 0.8)",
+        "rgba(125, 125, 125, 0.8)",
+        "rgba(175, 175, 175, 0.8)",
+        "rgba(225, 225, 225, 0.8)",
+        "rgba(50, 50, 50, 0.8)",
+        "rgba(100, 100, 100, 0.8)",
+        "rgba(150, 150, 150, 0.8)"
+      ],
+      border: [
+        "rgba(100, 100, 100, 1)",
+        "rgba(150, 150, 150, 1)",
+        "rgba(200, 200, 200, 1)",
+        "rgba(75, 75, 75, 1)",
+        "rgba(125, 125, 125, 1)",
+        "rgba(175, 175, 175, 1)",
+        "rgba(225, 225, 225, 1)",
+        "rgba(50, 50, 50, 1)",
+        "rgba(100, 100, 100, 1)",
+        "rgba(150, 150, 150, 1)"
+      ]
+    },
+    warm: {
+      bg: [
+        "rgba(255, 99, 71, 0.8)",
+        "rgba(255, 165, 0, 0.8)",
+        "rgba(255, 215, 0, 0.8)",
+        "rgba(255, 140, 0, 0.8)",
+        "rgba(255, 69, 0, 0.8)",
+        "rgba(250, 128, 114, 0.8)",
+        "rgba(255, 160, 122, 0.8)",
+        "rgba(255, 228, 181, 0.8)",
+        "rgba(255, 218, 185, 0.8)",
+        "rgba(255, 239, 213, 0.8)"
+      ],
+      border: [
+        "rgba(255, 99, 71, 1)",
+        "rgba(255, 165, 0, 1)",
+        "rgba(255, 215, 0, 1)",
+        "rgba(255, 140, 0, 1)",
+        "rgba(255, 69, 0, 1)",
+        "rgba(250, 128, 114, 1)",
+        "rgba(255, 160, 122, 1)",
+        "rgba(255, 228, 181, 1)",
+        "rgba(255, 218, 185, 1)",
+        "rgba(255, 239, 213, 1)"
+      ]
+    },
+    cool: {
+      bg: [
+        "rgba(70, 130, 180, 0.8)",
+        "rgba(100, 149, 237, 0.8)",
+        "rgba(65, 105, 225, 0.8)",
+        "rgba(0, 191, 255, 0.8)",
+        "rgba(30, 144, 255, 0.8)",
+        "rgba(135, 206, 250, 0.8)",
+        "rgba(176, 224, 230, 0.8)",
+        "rgba(95, 158, 160, 0.8)",
+        "rgba(72, 209, 204, 0.8)",
+        "rgba(64, 224, 208, 0.8)"
+      ],
+      border: [
+        "rgba(70, 130, 180, 1)",
+        "rgba(100, 149, 237, 1)",
+        "rgba(65, 105, 225, 1)",
+        "rgba(0, 191, 255, 1)",
+        "rgba(30, 144, 255, 1)",
+        "rgba(135, 206, 250, 1)",
+        "rgba(176, 224, 230, 1)",
+        "rgba(95, 158, 160, 1)",
+        "rgba(72, 209, 204, 1)",
+        "rgba(64, 224, 208, 1)"
+      ]
+    }
+  };
+
+  function getSelectedColorPalette() {
+    const selector = $("colorPalette");
+    const paletteName = selector ? selector.value : "default";
+    return colorPalettes[paletteName] || colorPalettes.default;
+  }
+
   function createChart(canvasId, data, type) {
     const canvas = $(canvasId);
     if (!canvas) return;
@@ -600,31 +763,9 @@
     const labels = Object.keys(data);
     const values = Object.values(data);
 
-    const brightColors = [
-      "rgba(59, 130, 246, 0.8)",
-      "rgba(16, 185, 129, 0.8)",
-      "rgba(239, 68, 68, 0.8)",
-      "rgba(245, 158, 11, 0.8)",
-      "rgba(168, 85, 247, 0.8)",
-      "rgba(236, 72, 153, 0.8)",
-      "rgba(6, 182, 212, 0.8)",
-      "rgba(132, 204, 22, 0.8)",
-      "rgba(251, 146, 60, 0.8)",
-      "rgba(99, 102, 241, 0.8)"
-    ];
-
-    const borderColors = [
-      "rgba(59, 130, 246, 1)",
-      "rgba(16, 185, 129, 1)",
-      "rgba(239, 68, 68, 1)",
-      "rgba(245, 158, 11, 1)",
-      "rgba(168, 85, 247, 1)",
-      "rgba(236, 72, 153, 1)",
-      "rgba(6, 182, 212, 1)",
-      "rgba(132, 204, 22, 1)",
-      "rgba(251, 146, 60, 1)",
-      "rgba(99, 102, 241, 1)"
-    ];
+    const palette = getSelectedColorPalette();
+    const brightColors = palette.bg;
+    const borderColors = palette.border;
 
     const ctx = canvas.getContext("2d");
     const isBar = type === "bar";
@@ -700,7 +841,9 @@
       applyFilters();
     });
 
-    $("toggleAnalyticsBtn").addEventListener("click", toggleAnalytics);
+    $("colorPalette").addEventListener("change", () => {
+      renderAnalytics(profiles);
+    });
     ["showExperience", "showAge", "showLocation", "showReferral"].forEach((id) => $(id).addEventListener("change", updateChartVisibility));
 
     $("modalClose").addEventListener("click", closeModal);
