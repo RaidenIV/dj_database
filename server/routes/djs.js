@@ -7,16 +7,23 @@ const { requireAdmin, allowPublicCreate } = require("../middleware/requireAdmin"
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+function normalizePhone(raw) {
+  const digits = String(raw || "").replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) return digits.slice(1);
+  return digits;
+}
+
 function normalizeProfileInput(body) {
   const stageName = String(body.stageName || "").trim();
   const email = String(body.email || "").trim();
+  const phoneDigits = normalizePhone(body.phoneNumber);
 
   return {
     stageName,
     fullName: String(body.fullName || "").trim(),
     city: String(body.city || "").trim(),
     state: String(body.state || "").trim(),
-    phoneNumber: String(body.phoneNumber || "").trim(),
+    phoneNumber: phoneDigits,
     experienceLevel: String(body.experienceLevel || "").trim(),
     age: String(body.age || "").trim(),
     email,
@@ -59,9 +66,7 @@ router.post("/", allowPublicCreate, async (req, res) => {
     const created = await DJProfile.create(data);
     res.status(201).json(created.toJSON());
   } catch (e) {
-    if (e && e.code === 11000) {
-      return res.status(409).json({ error: "Duplicate profile (stageName + email)" });
-    }
+    if (e && e.code === 11000) return res.status(409).json({ error: "Duplicate profile (stageName + email)" });
     res.status(500).json({ error: "Failed to create profile" });
   }
 });
@@ -83,9 +88,7 @@ router.put("/:id", requireAdmin, async (req, res) => {
     if (!updated) return res.status(404).json({ error: "Not found" });
     res.json(updated.toJSON());
   } catch (e) {
-    if (e && e.code === 11000) {
-      return res.status(409).json({ error: "Duplicate profile (stageName + email)" });
-    }
+    if (e && e.code === 11000) return res.status(409).json({ error: "Duplicate profile (stageName + email)" });
     res.status(500).json({ error: "Failed to update profile" });
   }
 });
