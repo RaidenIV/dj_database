@@ -1,0 +1,7 @@
+{
+  "name": "dj-database-monorepo",
+  "private": true,
+  "scripts": {
+    "start": "cd server && npm install && npm start"
+  }
+}
