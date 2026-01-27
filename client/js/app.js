@@ -842,7 +842,7 @@
     });
 
     $("colorPalette").addEventListener("change", () => {
-      renderAnalytics(profiles);
+      updateCharts();
     });
     ["showExperience", "showAge", "showLocation", "showReferral"].forEach((id) => $(id).addEventListener("change", updateChartVisibility));
 
