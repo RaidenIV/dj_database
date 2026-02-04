@@ -308,6 +308,7 @@
   // ----------------------------
   let profiles = [];
   let currentEditId = null;
+  let isViewOnlyMode = false; // NEW: track if modal is in view-only mode
 
   function updateCountLabel() { /* removed profile count under title */ }
 
@@ -337,6 +338,66 @@
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
       })
       .join(" ");
+  }
+
+  // NEW: Function to check if a profile has missing required or optional data
+  function hasMissingInfo(profile) {
+    // Check optional fields that should ideally be filled
+    const optionalFields = [
+      profile.city,
+      profile.state,
+      profile.phoneNumber,
+      profile.experienceLevel,
+      profile.socialMedia,
+      profile.heardAbout
+    ];
+    
+    // Return true if any optional field is empty
+    return optionalFields.some(field => !field || field.trim() === "");
+  }
+
+  // NEW: Function to format social media links (separate lines for URLs)
+  function formatSocialMedia(socialStr) {
+    if (!socialStr) return "";
+    
+    const urlIndicators = ["www.", ".com", ".net", ".org", "https://", "http://", "://"];
+    const lines = socialStr.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+    
+    // If it's a single line with URL indicators, return as-is
+    if (lines.length === 1 && urlIndicators.some(indicator => socialStr.toLowerCase().includes(indicator))) {
+      return escapeHtml(socialStr);
+    }
+    
+    // Otherwise, split by URL indicators and join with line breaks
+    const parts = [];
+    let currentPart = "";
+    
+    for (let i = 0; i < socialStr.length; i++) {
+      currentPart += socialStr[i];
+      
+      // Check if we've hit a URL indicator
+      for (const indicator of urlIndicators) {
+        if (currentPart.toLowerCase().endsWith(indicator) && currentPart.length > indicator.length) {
+          // Save everything before the indicator as a separate part
+          parts.push(currentPart.substring(0, currentPart.length - indicator.length).trim());
+          currentPart = indicator;
+          break;
+        }
+      }
+    }
+    
+    // Add the last part
+    if (currentPart.trim()) {
+      parts.push(currentPart.trim());
+    }
+    
+    // Filter empty parts and join with line breaks
+    const filtered = parts.filter(p => p && p.length > 0);
+    if (filtered.length <= 1) {
+      return escapeHtml(socialStr);
+    }
+    
+    return filtered.map(p => escapeHtml(p)).join("<br>");
   }
 
   async function loadProfiles() {
@@ -371,18 +432,50 @@
   // ----------------------------
   function openCreateModal() {
     currentEditId = null;
+    isViewOnlyMode = false; // NEW
     $("modalTitle").textContent = "Create Profile";
     $("profileForm").reset();
     $("heardAboutOther").style.display = "none";
+    
+    // NEW: Show form controls, hide edit button
+    setModalMode(false);
+    
+    $("profileModal").style.display = "block";
+  }
+
+  // NEW: Function to open modal in view-only mode
+  function openViewModal(id) {
+    currentEditId = id;
+    isViewOnlyMode = true;
+    const p = profiles.find((x) => x.id === id);
+    if (!p) return;
+
+    $("modalTitle").textContent = "View Profile";
+    populateModalFields(p);
+    
+    // Set to view-only mode
+    setModalMode(true);
+    
     $("profileModal").style.display = "block";
   }
 
   function openEditModal(id) {
     currentEditId = id;
+    isViewOnlyMode = false; // NEW
     const p = profiles.find((x) => x.id === id);
     if (!p) return;
 
     $("modalTitle").textContent = "Update Profile";
+    populateModalFields(p);
+    
+    // NEW: Show form controls, hide edit button
+    setModalMode(false);
+    
+    $("profileModal").style.display = "block";
+  }
+
+  // NEW: Function to populate modal fields
+  function populateModalFields(p) {
     $("stageName").value = p.stageName || "";
     $("fullName").value = p.fullName || "";
     $("city").value = p.city || "";
@@ -415,8 +508,39 @@
       $("heardAboutOther").style.display = "none";
       $("heardAboutOther").value = "";
     }
+  }
 
-    $("profileModal").style.display = "block";
+  // NEW: Function to toggle between view-only and edit mode
+  function setModalMode(viewOnly) {
+    const formInputs = $("profileForm").querySelectorAll("input, select");
+    const saveBtn = $("btnSave");
+    const cancelBtn = $("btnCancel");
+    const editBtn = $("btnEdit");
+    
+    if (viewOnly) {
+      // Disable all form inputs
+      formInputs.forEach(input => input.disabled = true);
+      
+      // Hide Save/Cancel, show Edit button
+      saveBtn.style.display = "none";
+      cancelBtn.style.display = "none";
+      editBtn.style.display = "inline-block";
+    } else {
+      // Enable all form inputs
+      formInputs.forEach(input => input.disabled = false);
+      
+      // Show Save/Cancel, hide Edit button
+      saveBtn.style.display = "inline-block";
+      cancelBtn.style.display = "inline-block";
+      editBtn.style.display = "none";
+    }
+  }
+
+  // NEW: Function to switch from view to edit mode
+  function switchToEditMode() {
+    isViewOnlyMode = false;
+    $("modalTitle").textContent = "Update Profile";
+    setModalMode(false);
   }
 
   function closeModal() {
@@ -539,6 +663,11 @@
         return s.sort((a, b) => (a.experienceLevel || "").localeCompare(b.experienceLevel || ""));
       case "city":
         return s.sort((a, b) => (a.city || "").toLowerCase().localeCompare((b.city || "").toLowerCase()));
+      // NEW: Add time created sorting options
+      case "created":
+        return s.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)); // Newest first
+      case "created-asc":
+        return s.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); // Oldest first
       default:
         return s;
     }
@@ -602,11 +731,13 @@
     c.innerHTML = arr
       .map((p) => {
         const phoneDisp = p.phoneNumber ? formatPhone(p.phoneNumber) : "";
-        const socialDisp = p.socialMedia ? truncate(p.socialMedia, 46) : "";
+        const socialDisp = p.socialMedia ? formatSocialMedia(p.socialMedia) : ""; // MODIFIED: Use new function
         const sourceDisp = p.heardAbout ? truncate(p.heardAbout, 34) : "";
+        const showMissingInfo = hasMissingInfo(p); // NEW: Check for missing info
 
         return `
         <div class="profile-card">
+          ${showMissingInfo ? '<div class="missing-info-indicator">Missing Info</div>' : ''}
           <div class="profile-info">
             <div class="stage-name">${escapeHtml(p.stageName || "")}</div>
             <div class="legal-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
@@ -643,10 +774,10 @@
                 <span class="detail-value">${escapeHtml(p.age || "")}</span>
               </div>
 
-              ${socialDisp ? `
+              ${p.socialMedia ? `
                 <div class="profile-detail">
                   <span class="detail-label">Social:</span>
-                  <span class="detail-value truncate" title="${escapeHtml(p.socialMedia || "")}">${escapeHtml(socialDisp)}</span>
+                  <span class="detail-value social-links">${socialDisp}</span>
                 </div>` : ""
               }
 
@@ -677,13 +808,13 @@
       });
     });
     
-    // Add double-click handler to profile cards
+    // MODIFIED: Double-click handler now opens view-only modal
     c.querySelectorAll(".profile-card").forEach((card) => {
       const editBtn = card.querySelector("button[data-action='edit']");
       if (editBtn) {
         const id = editBtn.getAttribute("data-id");
         card.addEventListener("dblclick", () => {
-          openEditModal(id);
+          openViewModal(id); // Changed from openEditModal to openViewModal
         });
       }
     });
@@ -976,7 +1107,7 @@
     });
 
     $("btnCreate").addEventListener("click", openCreateModal);
-        $("btnLoadCsv").addEventListener("click", openCsvPicker);
+    $("btnLoadCsv").addEventListener("click", openCsvPicker);
     $("btnSaveToServer").addEventListener("click", saveCsvToServer);
 
     $("csvFile").addEventListener("change", (e) => {
@@ -1000,6 +1131,9 @@
     $("modalClose").addEventListener("click", closeModal);
     $("btnCancel").addEventListener("click", closeModal);
     $("profileForm").addEventListener("submit", saveProfile);
+    
+    // NEW: Add Edit button handler
+    $("btnEdit").addEventListener("click", switchToEditMode);
 
     // Phone formatting on blur
     $("phoneNumber").addEventListener("blur", () => {
