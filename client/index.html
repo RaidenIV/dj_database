@@ -136,6 +136,8 @@
                 <option value="age">Age Group</option>
                 <option value="experience">Experience Level</option>
                 <option value="city">City (A-Z)</option>
+                <option value="created">Time Created (Newest First)</option>
+                <option value="created-asc">Time Created (Oldest First)</option>
               </select>
             </div>
 
@@ -303,8 +305,9 @@
         </div>
 
         <div class="form-actions">
+          <button type="submit" id="btnSave" class="btn-save">Save</button>
+          <button type="button" id="btnEdit" class="btn-edit" style="display: none;">Edit</button>
           <button type="button" id="btnCancel">Cancel</button>
-          <button type="submit" class="primary">Save Profile</button>
         </div>
       </form>
     </div>
@@ -313,7 +316,7 @@
   <!-- Custom Confirmation Modal -->
   <div id="confirmModal" class="modal confirm-modal">
     <div class="modal-content confirm-modal-content">
-      <div class="confirm-icon">❗</div>
+      <div class="confirm-icon">⚠</div>
       <h2 class="confirm-title" id="confirmTitle">Confirm Action</h2>
       <p class="confirm-message" id="confirmMessage">Are you sure?</p>
       <div class="confirm-actions">
