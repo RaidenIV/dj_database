@@ -447,6 +447,16 @@
   function openCreateModal() {
     currentEditId = null;
     isViewOnlyMode = false; // NEW
+    
+    // Remove expanded view if it exists
+    const expandedView = document.getElementById("expandedProfileView");
+    if (expandedView) {
+      expandedView.remove();
+    }
+    
+    // Ensure form is visible
+    $("profileForm").style.display = "block";
+    
     $("modalTitle").textContent = "Create Profile";
     $("profileForm").reset();
     $("heardAboutOther").style.display = "none";
@@ -464,11 +474,85 @@
     const p = profiles.find((x) => x.id === id);
     if (!p) return;
 
-    $("modalTitle").textContent = "View Profile";
-    populateModalFields(p);
+    // Set title to stage name
+    $("modalTitle").textContent = p.stageName || "DJ Profile";
     
-    // Set to view-only mode
-    setModalMode(true);
+    // Hide the form and show expanded profile view
+    $("profileForm").style.display = "none";
+    
+    // Create expanded profile card view
+    const expandedView = document.createElement("div");
+    expandedView.id = "expandedProfileView";
+    expandedView.className = "expanded-profile-view";
+    
+    const phoneDisp = p.phoneNumber ? formatPhone(p.phoneNumber) : "N/A";
+    const socialDisp = p.socialMedia ? p.socialMedia : "N/A";
+    const sourceDisp = p.heardAbout || "N/A";
+    const locationDisp = [p.city, p.state].filter(Boolean).join(", ") || "N/A";
+    
+    expandedView.innerHTML = `
+      <div class="expanded-profile-card">
+        <div class="expanded-legal-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
+        <div class="expanded-divider"></div>
+        
+        <div class="expanded-details">
+          <div class="expanded-detail">
+            <span class="expanded-label">Location:</span>
+            <span class="expanded-value">${escapeHtml(locationDisp)}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Phone:</span>
+            <span class="expanded-value">${escapeHtml(phoneDisp)}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Email:</span>
+            <span class="expanded-value">${escapeHtml(p.email || "N/A")}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Experience:</span>
+            <span class="expanded-value">${escapeHtml(p.experienceLevel || "N/A")}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Age:</span>
+            <span class="expanded-value">${escapeHtml(p.age || "N/A")}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Social Media:</span>
+            <span class="expanded-value">${escapeHtml(socialDisp)}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">How They Heard About Us:</span>
+            <span class="expanded-value">${escapeHtml(sourceDisp)}</span>
+          </div>
+        </div>
+        
+        <div class="expanded-divider"></div>
+        
+        <div class="expanded-actions">
+          <button type="button" id="btnEditExpanded" class="btn-edit-expanded">Edit</button>
+          <button type="button" id="btnCloseExpanded" class="btn-cancel-expanded">Close</button>
+        </div>
+      </div>
+    `;
+    
+    // Insert before the form
+    const modalContent = $("profileForm").parentElement;
+    modalContent.insertBefore(expandedView, $("profileForm"));
+    
+    // Add event listeners
+    $("btnEditExpanded").addEventListener("click", () => {
+      switchToEditMode();
+    });
+    
+    $("btnCloseExpanded").addEventListener("click", () => {
+      closeModal();
+    });
     
     $("profileModal").style.display = "block";
   }
@@ -478,6 +562,15 @@
     isViewOnlyMode = false; // NEW
     const p = profiles.find((x) => x.id === id);
     if (!p) return;
+
+    // Remove expanded view if it exists
+    const expandedView = document.getElementById("expandedProfileView");
+    if (expandedView) {
+      expandedView.remove();
+    }
+    
+    // Ensure form is visible
+    $("profileForm").style.display = "block";
 
     $("modalTitle").textContent = "Update Profile";
     populateModalFields(p);
@@ -553,11 +646,36 @@
   // NEW: Function to switch from view to edit mode
   function switchToEditMode() {
     isViewOnlyMode = false;
+    
+    // Remove expanded view if it exists
+    const expandedView = document.getElementById("expandedProfileView");
+    if (expandedView) {
+      expandedView.remove();
+    }
+    
+    // Show the form
+    $("profileForm").style.display = "block";
+    
+    // Populate form with current profile data
+    const p = profiles.find((x) => x.id === currentEditId);
+    if (p) {
+      populateModalFields(p);
+    }
+    
     $("modalTitle").textContent = "Update Profile";
     setModalMode(false);
   }
 
   function closeModal() {
+    // Remove expanded view if it exists
+    const expandedView = document.getElementById("expandedProfileView");
+    if (expandedView) {
+      expandedView.remove();
+    }
+    
+    // Show form again for next time
+    $("profileForm").style.display = "block";
+    
     $("profileModal").style.display = "none";
   }
 
