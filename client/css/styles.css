@@ -150,6 +150,17 @@ button.btn-save:disabled {
   cursor: not-allowed;
 }
 
+/* NEW: Edit button styling */
+button.btn-edit {
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+}
+
+button.btn-edit:hover {
+  background: #0088ee;
+}
+
 .search-card {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -346,12 +357,30 @@ select:focus {
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative; /* NEW: For absolute positioning of missing info indicator */
 }
 
 .profile-card:hover {
   border-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(0, 153, 255, 0.15);
+}
+
+/* NEW: Missing info indicator */
+.missing-info-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
 }
 
 .profile-info {
@@ -397,6 +426,12 @@ select:focus {
   color: var(--muted);
   min-width: 80px;
   flex-shrink: 0;
+}
+
+/* NEW: Social links with line breaks */
+.detail-value.social-links {
+  line-height: 1.5;
+  word-break: break-all;
 }
 
 .divider { height: 1px; background: var(--line); margin: 12px 0; }
@@ -513,6 +548,14 @@ input[type="password"] {
 input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+}
+
+/* NEW: Disabled input styling for view-only mode */
+input:disabled,
+select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: #0a0a0b;
 }
 
 .form-actions {
