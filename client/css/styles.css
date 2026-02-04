@@ -23,7 +23,7 @@ body { padding: 20px; }
 .container {
   max-width: 1600px;
   margin: 0 auto;
-  padding-top: 86px; /* clears fixed Menu button */
+  padding-top: 92px; /* clears fixed Menu button */
 }
 
 .main-card {
@@ -566,73 +566,114 @@ select:disabled {
 
 .form-actions button { flex: 1; }
 
-/* Navigation Menu */
+/* Navigation Menu - Modern Design */
 .nav-dropdown {
   position: fixed;
-  top: 18px;
-  left: 18px;
+  top: 20px;
+  left: 20px;
   z-index: 10000;
 }
 
 .nav-toggle {
-  background: rgba(26, 26, 26, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  height: 48px;
-  padding: 0 16px;
+  background: linear-gradient(135deg, rgba(19, 19, 22, 0.95) 0%, rgba(27, 27, 32, 0.95) 100%);
+  border: 1px solid rgba(0, 153, 255, 0.2);
+  border-radius: 14px;
+  height: 52px;
+  padding: 0 20px;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   font-family: 'Rajdhani', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   min-width: auto;
+  letter-spacing: 0.5px;
+}
+
+.nav-toggle::before {
+  content: "☰";
+  font-size: 18px;
+  line-height: 1;
 }
 
 .nav-toggle:hover {
-  background: rgba(36, 36, 36, 0.9);
+  background: linear-gradient(135deg, rgba(0, 153, 255, 0.15) 0%, rgba(0, 136, 238, 0.15) 100%);
   border-color: var(--accent);
+  box-shadow: 0 6px 30px rgba(0, 153, 255, 0.2), 0 0 0 1px rgba(0, 153, 255, 0.1) inset;
+  transform: translateY(-2px);
+}
+
+.nav-toggle:active {
+  transform: translateY(0);
 }
 
 .nav-menu {
   position: absolute;
-  top: 60px;
+  top: 64px;
   left: 0;
-  background: rgba(26, 26, 26, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(19, 19, 22, 0.98) 0%, rgba(27, 27, 32, 0.98) 100%);
+  border: 1px solid rgba(0, 153, 255, 0.2);
+  border-radius: 16px;
   padding: 8px;
-  min-width: 200px;
+  min-width: 220px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .nav-dropdown.active .nav-menu {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .nav-menu a {
-  display: block;
-  padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  letter-spacing: 0.3px;
+  gap: 12px;
+}
+
+.nav-menu a::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-menu a:hover {
-  background: rgba(0, 153, 255, 0.12);
+  background: linear-gradient(90deg, rgba(0, 153, 255, 0.15) 0%, rgba(0, 153, 255, 0.05) 100%);
   color: var(--accent);
+  padding-left: 22px;
+  box-shadow: 0 0 0 1px rgba(0, 153, 255, 0.1) inset;
+}
+
+.nav-menu a:hover::before {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.nav-menu a:active {
+  transform: scale(0.98);
 }
 
 .status-message {
@@ -680,7 +721,7 @@ select:disabled {
 }
 
 @media (max-height: 800px) and (min-width: 900px) {
-  .container { padding-top: 96px; }
+  .container { padding-top: 102px; }
   .main-card { margin-top: 0; }
 }
 
@@ -735,8 +776,8 @@ select:disabled {
   line-height: 1.35;
   overflow: auto;
   margin: 0;
-  flex: 1;
-  min-height: 100px;
+  height: 180px;
+  max-height: 180px;
 }
 
 .conn-dot{
