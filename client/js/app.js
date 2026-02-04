@@ -360,44 +360,58 @@
   function formatSocialMedia(socialStr) {
     if (!socialStr) return "";
     
-    const urlIndicators = ["www.", ".com", ".net", ".org", "https://", "http://", "://"];
-    const lines = socialStr.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+    // Split by common separators and newlines
+    const parts = socialStr
+      .split(/[\n,;|]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
     
-    // If it's a single line with URL indicators, return as-is
-    if (lines.length === 1 && urlIndicators.some(indicator => socialStr.toLowerCase().includes(indicator))) {
+    // If only one part, return as-is
+    if (parts.length <= 1) {
       return escapeHtml(socialStr);
     }
     
-    // Otherwise, split by URL indicators and join with line breaks
-    const parts = [];
-    let currentPart = "";
+    // URL indicators to detect links
+    const urlIndicators = [
+      'http://', 'https://', 'www.', 
+      '.com', '.net', '.org', '.io', '.co', 
+      'instagram.com', 'facebook.com', 'twitter.com', 
+      'soundcloud.com', 'spotify.com', 'tiktok.com',
+      'youtube.com', 'twitch.tv'
+    ];
     
-    for (let i = 0; i < socialStr.length; i++) {
-      currentPart += socialStr[i];
-      
-      // Check if we've hit a URL indicator
-      for (const indicator of urlIndicators) {
-        if (currentPart.toLowerCase().endsWith(indicator) && currentPart.length > indicator.length) {
-          // Save everything before the indicator as a separate part
-          parts.push(currentPart.substring(0, currentPart.length - indicator.length).trim());
-          currentPart = indicator;
-          break;
+    // Check if a string is likely a URL
+    const isLikelyURL = (str) => {
+      const lower = str.toLowerCase();
+      return urlIndicators.some(indicator => lower.includes(indicator));
+    };
+    
+    // Separate URLs from regular text
+    const result = [];
+    let currentGroup = [];
+    
+    for (const part of parts) {
+      if (isLikelyURL(part)) {
+        // If we have accumulated non-URL text, add it first
+        if (currentGroup.length > 0) {
+          result.push(currentGroup.join(', '));
+          currentGroup = [];
         }
+        // Add URL on its own line
+        result.push(part);
+      } else {
+        // Accumulate non-URL text
+        currentGroup.push(part);
       }
     }
     
-    // Add the last part
-    if (currentPart.trim()) {
-      parts.push(currentPart.trim());
+    // Add any remaining non-URL text
+    if (currentGroup.length > 0) {
+      result.push(currentGroup.join(', '));
     }
     
-    // Filter empty parts and join with line breaks
-    const filtered = parts.filter(p => p && p.length > 0);
-    if (filtered.length <= 1) {
-      return escapeHtml(socialStr);
-    }
-    
-    return filtered.map(p => escapeHtml(p)).join("<br>");
+    // Join with line breaks
+    return result.map(line => escapeHtml(line)).join('<br>');
   }
 
   async function loadProfiles() {
