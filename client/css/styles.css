@@ -498,16 +498,22 @@ select:focus {
 
 .close {
   font-size: 28px;
-  color: var(--muted);
+  color: #ffffff;
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
   line-height: 1;
-  background: none;
+  background: #dc2626;
   border: none;
-  padding: 0;
+  padding: 4px 12px;
+  border-radius: 8px;
+  width: auto;
+  min-width: auto;
 }
 
-.close:hover { color: var(--text); }
+.close:hover { 
+  background: #b91c1c;
+  transform: scale(1.1);
+}
 
 .form-group { margin-bottom: 16px; }
 
@@ -565,6 +571,105 @@ select:disabled {
 }
 
 .form-actions button { flex: 1; }
+
+/* Expanded Profile View */
+.expanded-profile-view {
+  margin-bottom: 20px;
+}
+
+.expanded-profile-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 32px;
+}
+
+.expanded-legal-name {
+  font-size: 20px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-style: italic;
+}
+
+.expanded-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 24px 0;
+}
+
+.expanded-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 15px;
+}
+
+.expanded-detail {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.expanded-label {
+  font-weight: 600;
+  color: var(--muted);
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.expanded-value {
+  color: var(--text);
+  word-break: break-word;
+  flex: 1;
+}
+
+.expanded-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-edit-expanded,
+.btn-cancel-expanded {
+  font-size: 12px;
+  padding: 8px 16px;
+  min-width: 100px;
+  flex: 0;
+}
+
+.btn-edit-expanded {
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+}
+
+.btn-edit-expanded:hover {
+  background: #0088ee;
+}
+
+.btn-cancel-expanded {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.btn-cancel-expanded:hover {
+  background: #1f1f24;
+}
+
+@media (max-width: 600px) {
+  .expanded-label {
+    min-width: 120px;
+  }
+  
+  .expanded-profile-card {
+    padding: 20px;
+  }
+  
+  .expanded-legal-name {
+    font-size: 18px;
+  }
+}
 
 /* Navigation Menu - Modern Design */
 .nav-dropdown {
