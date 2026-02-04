@@ -492,55 +492,42 @@
     
     expandedView.innerHTML = `
       <div class="expanded-profile-card">
-        <div class="expanded-header">
-          <div class="expanded-legal-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
-        </div>
+        <div class="expanded-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
         
-        <div class="expanded-sections">
-          <div class="expanded-section">
-            <div class="expanded-section-title">Personal Information</div>
-            <div class="expanded-section-content">
-              <div class="expanded-detail">
-                <span class="expanded-label">Age Group:</span>
-                <span class="expanded-value">${escapeHtml(p.age || "N/A")}</span>
-              </div>
-              <div class="expanded-detail">
-                <span class="expanded-label">Experience Level:</span>
-                <span class="expanded-value">${escapeHtml(p.experienceLevel || "N/A")}</span>
-              </div>
-            </div>
+        <div class="expanded-details">
+          <div class="expanded-detail">
+            <span class="expanded-label">Email</span>
+            <span class="expanded-value">${escapeHtml(p.email || "N/A")}</span>
           </div>
           
-          <div class="expanded-section">
-            <div class="expanded-section-title">Contact Information</div>
-            <div class="expanded-section-content">
-              <div class="expanded-detail">
-                <span class="expanded-label">Email:</span>
-                <span class="expanded-value">${escapeHtml(p.email || "N/A")}</span>
-              </div>
-              <div class="expanded-detail">
-                <span class="expanded-label">Phone:</span>
-                <span class="expanded-value">${escapeHtml(phoneDisp)}</span>
-              </div>
-              <div class="expanded-detail">
-                <span class="expanded-label">Location:</span>
-                <span class="expanded-value">${escapeHtml(locationDisp)}</span>
-              </div>
-            </div>
+          <div class="expanded-detail">
+            <span class="expanded-label">Phone</span>
+            <span class="expanded-value">${escapeHtml(phoneDisp)}</span>
           </div>
           
-          <div class="expanded-section">
-            <div class="expanded-section-title">Social Media & Referral</div>
-            <div class="expanded-section-content">
-              <div class="expanded-detail">
-                <span class="expanded-label">Social Media:</span>
-                <span class="expanded-value">${escapeHtml(socialDisp)}</span>
-              </div>
-              <div class="expanded-detail">
-                <span class="expanded-label">How They Heard About Us:</span>
-                <span class="expanded-value">${escapeHtml(sourceDisp)}</span>
-              </div>
-            </div>
+          <div class="expanded-detail">
+            <span class="expanded-label">Location</span>
+            <span class="expanded-value">${escapeHtml(locationDisp)}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Age Group</span>
+            <span class="expanded-value">${escapeHtml(p.age || "N/A")}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Experience Level</span>
+            <span class="expanded-value">${escapeHtml(p.experienceLevel || "N/A")}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Social Media</span>
+            <span class="expanded-value">${escapeHtml(socialDisp)}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">How They Heard About Us</span>
+            <span class="expanded-value">${escapeHtml(sourceDisp)}</span>
           </div>
         </div>
         
