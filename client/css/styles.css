@@ -620,6 +620,23 @@ select:disabled {
   line-height: 1.5;
 }
 
+/* Clickable social media links */
+.social-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.social-link:hover {
+  color: #0088ee;
+  border-bottom-color: #0088ee;
+}
+
+.social-link:active {
+  color: #0077dd;
+}
+
 .expanded-actions {
   display: flex;
   gap: 12px;
