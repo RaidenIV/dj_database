@@ -414,6 +414,45 @@
     return result.map(line => escapeHtml(line)).join('<br>');
   }
 
+  // NEW: Function to make URLs clickable
+  function makeLinksClickable(text) {
+    if (!text) return "N/A";
+    
+    // Split by common separators
+    const parts = text.split(/[\n,;|]+/).map(s => s.trim()).filter(Boolean);
+    
+    const urlIndicators = [
+      'http://', 'https://', 'www.', 
+      '.com', '.net', '.org', '.io', '.co', 
+      'instagram.com', 'facebook.com', 'twitter.com', 
+      'soundcloud.com', 'spotify.com', 'tiktok.com',
+      'youtube.com', 'twitch.tv'
+    ];
+    
+    const isLikelyURL = (str) => {
+      const lower = str.toLowerCase();
+      return urlIndicators.some(indicator => lower.includes(indicator));
+    };
+    
+    const makeLink = (url) => {
+      let href = url;
+      // Add protocol if missing
+      if (!url.match(/^https?:\/\//i)) {
+        href = 'https://' + url;
+      }
+      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="social-link">${escapeHtml(url)}</a>`;
+    };
+    
+    const result = parts.map(part => {
+      if (isLikelyURL(part)) {
+        return makeLink(part);
+      }
+      return escapeHtml(part);
+    });
+    
+    return result.join('<br>');
+  }
+
   async function loadProfiles() {
     try {
       const r = await fetch(API_BASE + "/api/djs", { headers: authHeaders() });
@@ -486,7 +525,7 @@
     expandedView.className = "expanded-profile-view";
     
     const phoneDisp = p.phoneNumber ? formatPhone(p.phoneNumber) : "N/A";
-    const socialDisp = p.socialMedia ? p.socialMedia : "N/A";
+    const socialDisp = p.socialMedia ? makeLinksClickable(p.socialMedia) : "N/A";
     const sourceDisp = p.heardAbout || "N/A";
     const locationDisp = [p.city, p.state].filter(Boolean).join(", ") || "N/A";
     
@@ -522,7 +561,7 @@
           
           <div class="expanded-detail">
             <span class="expanded-label">Social Media</span>
-            <span class="expanded-value">${escapeHtml(socialDisp)}</span>
+            <span class="expanded-value">${socialDisp}</span>
           </div>
           
           <div class="expanded-detail">
