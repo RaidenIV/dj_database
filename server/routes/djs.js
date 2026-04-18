@@ -52,6 +52,7 @@ function normalizeProfileInput(body) {
   return {
     stageName,
     fullName: String(body.fullName || "").trim(),
+    genre: String(body.genre || "").trim(),
     city: String(body.city || "").trim(),
     state: normalizeState(body.state),
     phoneNumber: phoneDigits,
@@ -72,6 +73,7 @@ router.get("/", requireAdmin, async (_req, res) => {
       id: d.id || (d._id ? String(d._id) : undefined),
       stageName: d.stageName,
       fullName: d.fullName,
+      genre: d.genre || "",
       city: d.city || "",
       state: d.state || "",
       phoneNumber: d.phoneNumber || "",

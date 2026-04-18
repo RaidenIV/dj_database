@@ -4,6 +4,7 @@ const DJProfileSchema = new mongoose.Schema(
   {
     stageName: { type: String, required: true, trim: true },
     fullName: { type: String, required: true, trim: true },
+    genre: { type: String, trim: true, default: "" },
     city: { type: String, trim: true, default: "" },
     state: { type: String, trim: true, default: "" },
     phoneNumber: { type: String, trim: true, default: "" },

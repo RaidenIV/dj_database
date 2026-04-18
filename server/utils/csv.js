@@ -25,6 +25,7 @@ function parseCsv(buffer) {
     out.push({
       stageName,
       fullName: pick(row, ["Name (First & Last):", "Name (First & Last)", "fullName"]),
+      genre: pick(row, ["Genre", "genre"]),
       city: pick(row, ["City", "city"]),
       state: pick(row, ["State", "state"]),
       phoneNumber: pick(row, ["Phone Number", "phoneNumber"]),

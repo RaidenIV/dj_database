@@ -344,6 +344,7 @@
   function hasMissingInfo(profile) {
     // Check optional fields that should ideally be filled
     const optionalFields = [
+      profile.genre,
       profile.city,
       profile.state,
       profile.phoneNumber,
@@ -499,6 +500,7 @@
     $("modalTitle").textContent = "Create Profile";
     $("profileForm").reset();
     $("heardAboutOther").style.display = "none";
+    $("genreOther").style.display = "none";
     
     // NEW: Show form controls, hide edit button
     setModalMode(false);
@@ -547,6 +549,11 @@
           <div class="expanded-detail">
             <span class="expanded-label">Location</span>
             <span class="expanded-value">${escapeHtml(locationDisp)}</span>
+          </div>
+          
+          <div class="expanded-detail">
+            <span class="expanded-label">Genre</span>
+            <span class="expanded-value">${escapeHtml(p.genre || "N/A")}</span>
           </div>
           
           <div class="expanded-detail">
@@ -628,6 +635,32 @@
     $("age").value = p.age || "";
     $("email").value = p.email || "";
     $("socialMedia").value = p.socialMedia || "";
+
+    // Handle genre with Other option
+    const genre = p.genre || "";
+    const standardGenres = [
+      "Dubstep",
+      "Riddim",
+      "Drum & Bass",
+      "Trap",
+      "Techno",
+      "House",
+      "Hip-Hop"
+    ];
+
+    if (standardGenres.includes(genre)) {
+      $("genre").value = genre;
+      $("genreOther").style.display = "none";
+      $("genreOther").value = "";
+    } else if (genre) {
+      $("genre").value = "Other";
+      $("genreOther").style.display = "block";
+      $("genreOther").value = genre;
+    } else {
+      $("genre").value = "";
+      $("genreOther").style.display = "none";
+      $("genreOther").value = "";
+    }
     
     // Handle heardAbout with Other option
     const heardAbout = p.heardAbout || "";
@@ -722,7 +755,13 @@
     e.preventDefault();
 
     const phoneDigits = normalizePhoneDigits($("phoneNumber").value);
-    
+
+    // Handle genre with Other option
+    let genreValue = $("genre").value.trim();
+    if (genreValue === "Other") {
+      genreValue = $("genreOther").value.trim();
+    }
+
     // Handle heardAbout with Other option
     let heardAboutValue = $("heardAbout").value.trim();
     if (heardAboutValue === "Other") {
@@ -741,6 +780,7 @@
     const payload = {
       stageName: $("stageName").value.trim(),
       fullName: $("fullName").value.trim(),
+      genre: genreValue,
       city: $("city").value.trim(),
       state: normalizeState($("state").value.trim()),
       phoneNumber: phoneDigits,
@@ -929,6 +969,13 @@
                 <span class="detail-label">Email:</span>
                 <span class="detail-value">${escapeHtml(p.email || "")}</span>
               </div>
+
+              ${p.genre ? `
+                <div class="profile-detail">
+                  <span class="detail-label">Genre:</span>
+                  <span class="detail-value">${escapeHtml(p.genre)}</span>
+                </div>` : ""
+              }
 
               ${p.experienceLevel ? `
                 <div class="profile-detail">
@@ -1306,6 +1353,17 @@
     // Phone formatting on blur
     $("phoneNumber").addEventListener("blur", () => {
       $("phoneNumber").value = formatPhone($("phoneNumber").value);
+    });
+
+    // Show/hide genreOther field based on dropdown selection
+    $("genre").addEventListener("change", () => {
+      const otherField = $("genreOther");
+      if ($("genre").value === "Other") {
+        otherField.style.display = "block";
+      } else {
+        otherField.style.display = "none";
+        otherField.value = "";
+      }
     });
 
     // Show/hide heardAboutOther field based on dropdown selection
