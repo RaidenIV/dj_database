@@ -1083,7 +1083,7 @@
         });
       }
     });
-    createChart("referralChart", refCounts, "pie");
+    createChart("referralChart", refCounts, "doughnut");
   }
 
   const colorPalettes = {
