@@ -1,0 +1,6 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pole -->
+  <line x1="18" y1="8" x2="18" y2="95" stroke="#dc2626" stroke-width="5" stroke-linecap="round"/>
+  <!-- Pennant triangle -->
+  <polygon points="18,12 82,38 18,64" fill="#dc2626" stroke="#dc2626" stroke-width="2" stroke-linejoin="round"/>
+</svg>

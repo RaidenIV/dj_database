@@ -534,7 +534,7 @@
     const locationDisp = [p.city, p.state].filter(Boolean).join(", ") || "N/A";
     const internalNotesDisp = p.internalNotes || "N/A";
     const flagNoteDisp = p.flagNote || "";
-    const expandedFlagIcon = flagNoteDisp ? `<span class="profile-flag-icon" title="${escapeHtml(flagNoteDisp)}" aria-label="Flag note">⚑</span>` : "";
+    const expandedFlagIcon = flagNoteDisp ? `<img class="profile-flag-icon" src="/flag.svg" alt="Flag note" title="${escapeHtml(flagNoteDisp)}">` : "";
     
     expandedView.innerHTML = `
       <div class="expanded-profile-card">
@@ -963,7 +963,7 @@
         const sourceDisp = p.heardAbout ? truncate(p.heardAbout, 34) : "";
         const showMissingInfo = hasMissingInfo(p); // NEW: Check for missing info
         const flagNote = p.flagNote || "";
-        const profileFlagIcon = flagNote ? `<span class="profile-flag-icon" title="${escapeHtml(flagNote)}" aria-label="Flag note">⚑</span>` : "";
+        const profileFlagIcon = flagNote ? `<img class="profile-flag-icon" src="/flag.svg" alt="Flag note" title="${escapeHtml(flagNote)}">` : "";
 
         return `
         <div class="profile-card">
@@ -1309,7 +1309,12 @@
         scales: isBar
           ? {
               y: { beginAtZero: true, ticks: { color: "#a7a7ad", font: { family: "Rajdhani", size: 12 } }, grid: { color: "#2a2a2f" } },
-              x: { ticks: { color: "#a7a7ad", font: { family: "Rajdhani", size: 12 } }, grid: { color: "#2a2a2f" } }
+              x: {
+                type: "category",
+                offset: true,
+                ticks: { color: "#a7a7ad", font: { family: "Rajdhani", size: 12 }, align: "center", crossAlign: "center", maxRotation: 0, minRotation: 0 },
+                grid: { color: "#2a2a2f", offset: false }
+              }
             }
           : {}
       }

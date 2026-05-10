@@ -609,9 +609,10 @@ textarea:disabled {
 }
 
 .profile-flag-icon {
-  color: var(--warning);
-  font-size: 18px;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  object-fit: contain;
   flex: 0 0 auto;
 }
 
