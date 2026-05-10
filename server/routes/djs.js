@@ -61,6 +61,8 @@ function normalizeProfileInput(body) {
     email,
     socialMedia: String(body.socialMedia || "").trim(),
     heardAbout: String(body.heardAbout || "").trim(),
+    internalNotes: String(body.internalNotes || "").trim(),
+    flagNote: String(body.flagNote || "").trim(),
     stageNameLower: stageName.toLowerCase(),
     emailLower: email.toLowerCase()
   };
@@ -82,6 +84,8 @@ router.get("/", requireAdmin, async (_req, res) => {
       email: d.email,
       socialMedia: d.socialMedia || "",
       heardAbout: d.heardAbout || "",
+      internalNotes: d.internalNotes || "",
+      flagNote: d.flagNote || "",
       createdAt: d.createdAt,
       updatedAt: d.updatedAt
     }))

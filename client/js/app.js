@@ -469,7 +469,9 @@
       // Normalize states in loaded profiles
       profiles = profiles.map(p => ({
         ...p,
-        state: normalizeState(p.state)
+        state: normalizeState(p.state),
+        internalNotes: p.internalNotes || "",
+        flagNote: p.flagNote || ""
       }));
       updateCountLabel();
       logLine(`Profiles loaded: ${profiles.length}`, "info");
@@ -530,10 +532,13 @@
     const socialDisp = p.socialMedia ? makeLinksClickable(p.socialMedia) : "N/A";
     const sourceDisp = p.heardAbout || "N/A";
     const locationDisp = [p.city, p.state].filter(Boolean).join(", ") || "N/A";
+    const internalNotesDisp = p.internalNotes || "N/A";
+    const flagNoteDisp = p.flagNote || "";
+    const expandedFlagIcon = flagNoteDisp ? `<span class="profile-flag-icon" title="${escapeHtml(flagNoteDisp)}" aria-label="Flag note">⚑</span>` : "";
     
     expandedView.innerHTML = `
       <div class="expanded-profile-card">
-        <div class="expanded-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
+        <div class="expanded-name">${expandedFlagIcon}${escapeHtml(capitalizeName(p.fullName || ""))}</div>
         
         <div class="expanded-details">
           <div class="expanded-detail">
@@ -574,6 +579,17 @@
           <div class="expanded-detail">
             <span class="expanded-label">How They Heard About Us</span>
             <span class="expanded-value">${escapeHtml(sourceDisp)}</span>
+          </div>
+
+          ${flagNoteDisp ? `
+          <div class="expanded-detail">
+            <span class="expanded-label">Flag Note</span>
+            <span class="expanded-value">${escapeHtml(flagNoteDisp)}</span>
+          </div>` : ""}
+
+          <div class="expanded-detail">
+            <span class="expanded-label">Internal Notes</span>
+            <span class="expanded-value">${escapeHtml(internalNotesDisp)}</span>
           </div>
         </div>
         
@@ -635,6 +651,8 @@
     $("age").value = p.age || "";
     $("email").value = p.email || "";
     $("socialMedia").value = p.socialMedia || "";
+    $("internalNotes").value = p.internalNotes || "";
+    $("flagNote").value = p.flagNote || "";
 
     // Handle genre with Other option
     const genre = p.genre || "";
@@ -688,7 +706,7 @@
 
   // NEW: Function to toggle between view-only and edit mode
   function setModalMode(viewOnly) {
-    const formInputs = $("profileForm").querySelectorAll("input, select");
+    const formInputs = $("profileForm").querySelectorAll("input, select, textarea");
     const saveBtn = $("btnSave");
     const cancelBtn = $("btnCancel");
     const editBtn = $("btnEdit");
@@ -788,7 +806,9 @@
       age: $("age").value.trim(),
       email: $("email").value.trim(),
       socialMedia: $("socialMedia").value.trim(),
-      heardAbout: heardAboutValue
+      heardAbout: heardAboutValue,
+      internalNotes: $("internalNotes").value.trim(),
+      flagNote: $("flagNote").value.trim()
     };
 
     const url = currentEditId ? `${API_BASE}/api/djs/${encodeURIComponent(currentEditId)}` : `${API_BASE}/api/djs`;
@@ -942,12 +962,14 @@
         const socialDisp = p.socialMedia ? formatSocialMedia(p.socialMedia) : ""; // MODIFIED: Use new function
         const sourceDisp = p.heardAbout ? truncate(p.heardAbout, 34) : "";
         const showMissingInfo = hasMissingInfo(p); // NEW: Check for missing info
+        const flagNote = p.flagNote || "";
+        const profileFlagIcon = flagNote ? `<span class="profile-flag-icon" title="${escapeHtml(flagNote)}" aria-label="Flag note">⚑</span>` : "";
 
         return `
         <div class="profile-card">
           ${showMissingInfo ? '<div class="missing-info-indicator">Missing Info</div>' : ''}
           <div class="profile-info">
-            <div class="stage-name">${escapeHtml(p.stageName || "")}</div>
+            <div class="stage-name">${profileFlagIcon}${escapeHtml(p.stageName || "")}</div>
             <div class="legal-name">${escapeHtml(capitalizeName(p.fullName || ""))}</div>
             <div class="divider"></div>
 

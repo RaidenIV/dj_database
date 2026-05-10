@@ -13,6 +13,8 @@ const DJProfileSchema = new mongoose.Schema(
     email: { type: String, required: true, trim: true },
     socialMedia: { type: String, trim: true, default: "" },
     heardAbout: { type: String, trim: true, default: "" },
+    internalNotes: { type: String, trim: true, default: "" },
+    flagNote: { type: String, trim: true, default: "" },
 
     stageNameLower: { type: String, required: true, index: true },
     emailLower: { type: String, required: true, index: true }

@@ -12,7 +12,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-  <link rel="stylesheet" href="/css/styles.css?v=5">
+  <link rel="stylesheet" href="/css/styles.css?v=6">
 </head>
 <body>
   <!-- Navigation Menu -->
@@ -277,6 +277,7 @@
             <select id="experienceLevel">
               <option value="">Select experience level...</option>
               <option value="Under 1 year">Under 1 year</option>
+              <option value="1 year">1 year</option>
               <option value="2 years">2 years</option>
               <option value="3 years">3 years</option>
               <option value="4 years">4 years</option>
@@ -318,6 +319,16 @@
             </select>
             <input type="text" id="heardAboutOther" placeholder="Please specify..." style="display: none; margin-top: 8px;">
           </div>
+
+          <div class="form-group form-group-full">
+            <label for="internalNotes">Internal Notes</label>
+            <textarea id="internalNotes" rows="4" placeholder="Add internal notes for this profile..."></textarea>
+          </div>
+
+          <div class="form-group form-group-full">
+            <label for="flagNote">Add Flag</label>
+            <textarea id="flagNote" rows="3" placeholder="Add a flag note. A flag icon will appear on this profile when saved."></textarea>
+          </div>
         </div>
 
         <div class="form-actions">
@@ -342,6 +353,6 @@
     </div>
   </div>
 
-  <script src="/js/app.js?v=6"></script>
+  <script src="/js/app.js?v=7"></script>
 </body>
 </html>
