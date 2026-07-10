@@ -654,9 +654,8 @@
     $("internalNotes").value = p.internalNotes || "";
     $("flagNote").value = p.flagNote || "";
 
-    // Handle genre with Other option
-    const genre = p.genre || "";
-    const standardGenres = [
+    // Populate all selected genres while preserving older single-genre records.
+    const standardGenres = new Set([
       "Dubstep",
       "Riddim",
       "Drum & Bass",
@@ -664,21 +663,23 @@
       "Techno",
       "House",
       "Hip-Hop"
-    ];
+    ]);
+    const savedGenres = String(p.genre || "")
+      .split(",")
+      .map((genre) => genre.trim())
+      .filter(Boolean);
+    const customGenres = savedGenres.filter((genre) => !standardGenres.has(genre) && genre !== "Other");
 
-    if (standardGenres.includes(genre)) {
-      $("genre").value = genre;
-      $("genreOther").style.display = "none";
-      $("genreOther").value = "";
-    } else if (genre) {
-      $("genre").value = "Other";
-      $("genreOther").style.display = "block";
-      $("genreOther").value = genre;
-    } else {
-      $("genre").value = "";
-      $("genreOther").style.display = "none";
-      $("genreOther").value = "";
-    }
+    document.querySelectorAll('input[name="genre"]').forEach((checkbox) => {
+      if (checkbox.value === "Other") {
+        checkbox.checked = customGenres.length > 0 || savedGenres.includes("Other");
+      } else {
+        checkbox.checked = savedGenres.includes(checkbox.value);
+      }
+    });
+
+    $("genreOther").value = customGenres.join(", ");
+    $("genreOther").style.display = $("genreOtherCheckbox").checked ? "block" : "none";
     
     // Handle heardAbout with Other option
     const heardAbout = p.heardAbout || "";
@@ -774,11 +775,16 @@
 
     const phoneDigits = normalizePhoneDigits($("phoneNumber").value);
 
-    // Handle genre with Other option
-    let genreValue = $("genre").value.trim();
-    if (genreValue === "Other") {
-      genreValue = $("genreOther").value.trim();
+    // Store all checked genres as a comma-separated value for backward compatibility.
+    const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked'))
+      .map((checkbox) => checkbox.value)
+      .filter((genre) => genre !== "Other");
+    if ($("genreOtherCheckbox").checked) {
+      const customGenre = $("genreOther").value.trim();
+      if (customGenre) selectedGenres.push(customGenre);
+      else selectedGenres.push("Other");
     }
+    const genreValue = selectedGenres.join(", ");
 
     // Handle heardAbout with Other option
     let heardAboutValue = $("heardAbout").value.trim();
@@ -1382,11 +1388,12 @@
       $("phoneNumber").value = formatPhone($("phoneNumber").value);
     });
 
-    // Show/hide genreOther field based on dropdown selection
-    $("genre").addEventListener("change", () => {
+    // Show/hide the custom genre field when the Other checkbox changes.
+    $("genreOtherCheckbox").addEventListener("change", () => {
       const otherField = $("genreOther");
-      if ($("genre").value === "Other") {
+      if ($("genreOtherCheckbox").checked) {
         otherField.style.display = "block";
+        otherField.focus();
       } else {
         otherField.style.display = "none";
         otherField.value = "";

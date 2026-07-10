@@ -520,6 +520,57 @@ select:focus {
 
 .form-group { margin-bottom: 16px; }
 
+.genre-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.genre-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0f0f12;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.genre-checkbox:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.genre-checkbox:has(input:focus-visible) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+}
+
+.genre-checkbox:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(0, 153, 255, 0.1);
+  color: var(--accent);
+}
+
+.genre-checkbox input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  flex: 0 0 auto;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.genre-checkbox span {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

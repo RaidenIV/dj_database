@@ -190,18 +190,17 @@
           </div>
 
           <div class="form-group">
-            <label for="genre">Genre</label>
-            <select id="genre">
-              <option value="">Select genre...</option>
-              <option value="Dubstep">Dubstep</option>
-              <option value="Riddim">Riddim</option>
-              <option value="Drum & Bass">Drum & Bass</option>
-              <option value="Trap">Trap</option>
-              <option value="Techno">Techno</option>
-              <option value="House">House</option>
-              <option value="Hip-Hop">Hip-Hop</option>
-              <option value="Other">Other</option>
-            </select>
+            <label>Genre</label>
+            <div class="genre-checkbox-grid" id="genreOptions" role="group" aria-label="Genre options">
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Dubstep"><span>Dubstep</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Riddim"><span>Riddim</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Drum &amp; Bass"><span>Drum &amp; Bass</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Trap"><span>Trap</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Techno"><span>Techno</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="House"><span>House</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Hip-Hop"><span>Hip-Hop</span></label>
+              <label class="genre-checkbox"><input type="checkbox" name="genre" value="Other" id="genreOtherCheckbox"><span>Other</span></label>
+            </div>
             <input type="text" id="genreOther" placeholder="Please specify..." style="display: none; margin-top: 8px;">
           </div>
 
