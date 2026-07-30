@@ -1,10 +1,11 @@
 <!--
   SQUARESPACE PAGE HEADER CODE INJECTION
 
-  1. Replace YOUR-DJ-DATABASE-DOMAIN with the Railway domain for the deployed
-     DJ Database application.
-  2. Paste this entire file into the submission page's Page Header Code Injection.
-  3. Do not paste this into a Code Block.
+  1. Paste this entire file into the submission page's Page Header Code Injection.
+  2. Do not paste this into a Code Block.
+
+  DJ Database URL:
+  https://djdatabase-production.up.railway.app/
 
   The hosted submission form remains at /submit?embed=1. This snippet replaces
   the visible Squarespace page with a fixed, black, non-scrollable viewport and
@@ -96,7 +97,8 @@
   (() => {
     "use strict";
 
-    const APP_ORIGIN = "https://djdatabase-production.up.railway.app/";
+    const APP_URL = "https://djdatabase-production.up.railway.app/submit?embed=1";
+    const APP_ORIGIN = new URL(APP_URL).origin;
     const FORM_WIDTH = 800;
     const DEFAULT_FORM_HEIGHT = 1000;
     const EDGE_GAP = 16;
@@ -119,7 +121,7 @@
       const frame = document.createElement("iframe");
       frame.id = "xodia-dj-submission-frame";
       frame.title = "DJ Profile Submission";
-      frame.src = `${APP_ORIGIN.replace(/\/$/, "")}/submit?embed=1`;
+      frame.src = APP_URL;
       frame.setAttribute("scrolling", "no");
       frame.setAttribute("allow", "clipboard-write");
 
