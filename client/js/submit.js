@@ -21,6 +21,42 @@
     status.className = `submission-status${kind ? ` ${kind}` : ""}`;
   }
 
+  function isEmbedMode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("embed") === "1" && window.parent !== window;
+  }
+
+  function postEmbedHeight() {
+    if (!isEmbedMode()) return;
+
+    const height = Math.ceil(Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight
+    ));
+
+    window.parent.postMessage({
+      type: "xodia-dj-submission-height",
+      height
+    }, "*");
+  }
+
+  function initializeEmbedMode() {
+    if (!isEmbedMode()) return;
+
+    document.documentElement.classList.add("is-embedded");
+    document.body.classList.add("is-embedded");
+    postEmbedHeight();
+
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(postEmbedHeight);
+      observer.observe(document.body);
+    } else {
+      window.addEventListener("resize", postEmbedHeight);
+    }
+
+    window.addEventListener("load", postEmbedHeight);
+  }
+
   function getGenreValue() {
     const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked'))
       .map((checkbox) => checkbox.value)
@@ -98,6 +134,7 @@
   }
 
   window.addEventListener("DOMContentLoaded", () => {
+    initializeEmbedMode();
     $("submissionForm").addEventListener("submit", submitProfile);
 
     $("phoneNumber").addEventListener("blur", () => {

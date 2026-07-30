@@ -98,6 +98,22 @@
   color: #fca5a5;
 }
 
+
+html.is-embedded,
+.submission-page.is-embedded {
+  min-height: 0;
+  background: transparent;
+}
+
+.submission-page.is-embedded {
+  padding: 0;
+}
+
+.submission-page.is-embedded .submission-shell {
+  width: 100%;
+  padding: 0;
+}
+
 @media (max-width: 640px) {
   .submission-page {
     padding: 12px;

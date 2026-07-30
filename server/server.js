@@ -29,7 +29,13 @@ app.use(
         "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
         "img-src": ["'self'", "data:", "https://images.squarespace-cdn.com"],
         "connect-src": ["'self'"],
-        "frame-ancestors": ["'self'", "https://www.xodiamediagroup.com", "https://xodiamediagroup.com"]
+        "frame-ancestors": [
+          "'self'",
+          "https://www.xodiamediagroup.com",
+          "https://xodiamediagroup.com",
+          "https://squarespace.com",
+          "https://*.squarespace.com"
+        ]
       }
     }
   })
