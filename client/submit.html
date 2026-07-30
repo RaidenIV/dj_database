@@ -1,3 +1,10 @@
+<!--
+  DJ SUBMISSION — SQUARESPACE PAGE HEADER CODE INJECTION
+
+  Paste this entire file into the dedicated Squarespace submission page's
+  Page Header Code Injection field. It renders the form directly on the page;
+  it does not use an iframe.
+-->
 <style>
   html.xodia-dj-form-page,
   html.xodia-dj-form-page body {
@@ -81,10 +88,25 @@
   #xodia-dj-submission-app h1 {
     margin: 0 0 5px;
     color: var(--text);
+    font-family: Rajdhani, ui-sans-serif, system-ui, -apple-system, sans-serif;
     font-size: 32px;
+    font-style: normal;
     font-weight: 700;
     line-height: 1.05;
     letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  #xodia-dj-submission-app .required-note {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  #xodia-dj-submission-app .required-asterisk {
+    color: #ff3b30;
+    font-weight: 700;
   }
 
   #xodia-dj-submission-app .submission-subtitle {
@@ -357,24 +379,25 @@
               <div>
                 <h1 id="xodia-dj-form-title">DJ Submission Form</h1>
                 <p class="submission-subtitle">Complete the form below to submit your information for future bookings.</p>
+                <p class="required-note">Required fields are marked with an asterisk <span class="required-asterisk" aria-hidden="true">*</span></p>
               </div>
               <img id="xodia-dj-submission-logo" src="${LOGO_URL}" alt="Xodia Media Group">
             </header>
 
-            <form id="xodia-dj-submission-form" novalidate>
+            <form id="xodia-dj-submission-form">
               <div class="submission-grid">
                 <div class="form-group field-half">
-                  <label for="xodia-stageName">Stage Name *</label>
+                  <label for="xodia-stageName">Stage Name <span class="required-asterisk" aria-hidden="true">*</span></label>
                   <input type="text" id="xodia-stageName" maxlength="150" autocomplete="organization-title" required>
                 </div>
 
                 <div class="form-group field-half">
-                  <label for="xodia-fullName">Name (First &amp; Last) *</label>
+                  <label for="xodia-fullName">Name (First &amp; Last) <span class="required-asterisk" aria-hidden="true">*</span></label>
                   <input type="text" id="xodia-fullName" maxlength="150" autocomplete="name" required>
                 </div>
 
                 <div class="form-group field-half">
-                  <label for="xodia-email">Email *</label>
+                  <label for="xodia-email">Email <span class="required-asterisk" aria-hidden="true">*</span></label>
                   <input type="email" id="xodia-email" maxlength="254" autocomplete="email" required>
                 </div>
 
@@ -384,13 +407,13 @@
                 </div>
 
                 <div class="form-group field-third">
-                  <label for="xodia-city">City</label>
-                  <input type="text" id="xodia-city" maxlength="150" autocomplete="address-level2">
+                  <label for="xodia-city">City <span class="required-asterisk" aria-hidden="true">*</span></label>
+                  <input type="text" id="xodia-city" maxlength="150" autocomplete="address-level2" required>
                 </div>
 
                 <div class="form-group field-third">
-                  <label for="xodia-state">State</label>
-                  <select id="xodia-state" autocomplete="address-level1">
+                  <label for="xodia-state">State <span class="required-asterisk" aria-hidden="true">*</span></label>
+                  <select id="xodia-state" autocomplete="address-level1" required>
                     <option value="">Select state...</option>
               <option value="Alabama">Alabama</option>
               <option value="Alaska">Alaska</option>
@@ -446,7 +469,7 @@
                 </div>
 
                 <div class="form-group field-third">
-                  <label for="xodia-age">Age *</label>
+                  <label for="xodia-age">Age <span class="required-asterisk" aria-hidden="true">*</span></label>
                   <select id="xodia-age" required>
                     <option value="">Select age range...</option>
                     <option value="under 18">under 18</option>
@@ -484,8 +507,8 @@
                 </div>
 
                 <div class="form-group field-full">
-                  <label>Genre (Select all that apply)</label>
-                  <div class="genre-checkbox-grid" role="group" aria-label="Genre options">
+                  <label id="xodia-genre-label">Genre <span class="required-asterisk" aria-hidden="true">*</span></label>
+                  <div class="genre-checkbox-grid" role="group" aria-labelledby="xodia-genre-label" aria-required="true">
                     <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Dubstep"><span>Dubstep</span></label>
                     <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Riddim"><span>Riddim</span></label>
                     <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Drum &amp; Bass"><span>Drum &amp; Bass</span></label>
@@ -523,6 +546,7 @@
     const form = $("xodia-dj-submission-form");
     const button = $("xodia-dj-submit-button");
     const status = $("xodia-dj-submission-status");
+    const genreCheckboxes = Array.from(app.querySelectorAll('input[name="xodia-genre"]'));
     const genreOtherCheckbox = $("xodia-genreOtherCheckbox");
     const genreOther = $("xodia-genreOther");
     const heardAbout = $("xodia-heardAbout");
@@ -567,6 +591,14 @@
       requestAnimationFrame(fitForm);
     }
 
+    function validateGenreSelection() {
+      const hasSelectedGenre = genreCheckboxes.some((checkbox) => checkbox.checked);
+      genreCheckboxes[0].setCustomValidity(
+        hasSelectedGenre ? "" : "Select at least one genre."
+      );
+      return hasSelectedGenre;
+    }
+
     function getGenreValue() {
       const genres = Array.from(app.querySelectorAll('input[name="xodia-genre"]:checked'))
         .map((checkbox) => checkbox.value)
@@ -594,6 +626,8 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+
+      validateGenreSelection();
 
       if (!form.checkValidity()) {
         form.reportValidity();
@@ -646,6 +680,10 @@
       event.target.value = formatPhone(event.target.value);
     });
 
+    genreCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", validateGenreSelection);
+    });
+
     genreOtherCheckbox.addEventListener("change", () => {
       genreOther.hidden = !genreOtherCheckbox.checked;
       if (genreOther.hidden) genreOther.value = "";
@@ -667,6 +705,7 @@
       new ResizeObserver(fitForm).observe(card);
     }
 
+    validateGenreSelection();
     requestAnimationFrame(fitForm);
   }
 
