@@ -1,0 +1,131 @@
+.submission-page {
+  padding: 24px;
+}
+
+.submission-shell {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding: 28px 0;
+}
+
+.submission-card {
+  background: #0d0d0e;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px;
+}
+
+.submission-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.submission-eyebrow {
+  margin-bottom: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.submission-logo {
+  width: 140px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.submission-page input[type="email"],
+.submission-page input[type="tel"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #0f0f12;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  outline: none;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.submission-page input[type="email"]:focus,
+.submission-page input[type="tel"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+}
+
+.submission-page [hidden] {
+  display: none !important;
+}
+
+#genreOther,
+#heardAboutOther {
+  margin-top: 8px;
+}
+
+.submission-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.submission-actions button {
+  min-width: 220px;
+}
+
+.submission-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.submission-status {
+  min-height: 22px;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.submission-status.success {
+  color: var(--success);
+}
+
+.submission-status.error {
+  color: #fca5a5;
+}
+
+@media (max-width: 640px) {
+  .submission-page {
+    padding: 12px;
+  }
+
+  .submission-shell {
+    padding: 12px 0;
+  }
+
+  .submission-card {
+    padding: 20px;
+  }
+
+  .submission-header {
+    flex-direction: column-reverse;
+    gap: 16px;
+  }
+
+  .submission-logo {
+    width: 105px;
+  }
+
+  .submission-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .submission-status {
+    text-align: left;
+  }
+}

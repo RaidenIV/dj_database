@@ -214,7 +214,7 @@
     // Refresh auth + data
     (async () => {
       await checkAuthState();
-      await loadProfiles();
+      await Promise.all([loadProfiles(), loadSubmissions()]);
       applyFilters();
       updateCharts();
     })();
@@ -307,6 +307,7 @@
   // State / helpers
   // ----------------------------
   let profiles = [];
+  let pendingSubmissions = [];
   let currentEditId = null;
   let isViewOnlyMode = false; // NEW: track if modal is in view-only mode
 
@@ -877,6 +878,181 @@
     updateCharts();
   }
 
+
+  // ----------------------------
+  // Public submission approval queue
+  // ----------------------------
+  function formatSubmissionDate(value) {
+    if (!value) return "Unknown";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Unknown";
+    return date.toLocaleString([], {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  }
+
+  function setSubmissionQueueState(message, kind = "") {
+    const status = $("submissionQueueStatus");
+    if (!status) return;
+    status.textContent = message;
+    status.className = `queue-status${kind ? ` ${kind}` : ""}`;
+  }
+
+  function renderSubmissionQueue() {
+    const container = $("submissionQueue");
+    const count = $("submissionQueueCount");
+    if (!container || !count) return;
+
+    const total = pendingSubmissions.length;
+    count.textContent = `${total} Pending`;
+
+    if (!total) {
+      container.innerHTML = "";
+      setSubmissionQueueState("No profiles are currently awaiting approval.", "empty");
+      return;
+    }
+
+    setSubmissionQueueState("");
+    container.innerHTML = pendingSubmissions.map((submission) => {
+      const location = [submission.city, submission.state].filter(Boolean).join(", ") || "Not provided";
+      const phone = submission.phoneNumber ? formatPhone(submission.phoneNumber) : "Not provided";
+      const social = submission.socialMedia ? makeLinksClickable(submission.socialMedia) : "Not provided";
+
+      return `
+        <article class="submission-queue-item">
+          <div class="submission-queue-item-header">
+            <div>
+              <h3>${escapeHtml(submission.stageName || "Unnamed DJ")}</h3>
+              <p>${escapeHtml(capitalizeName(submission.fullName || ""))}</p>
+            </div>
+            <span>${escapeHtml(formatSubmissionDate(submission.createdAt))}</span>
+          </div>
+
+          <div class="submission-queue-details">
+            <div><span>Email</span><strong>${escapeHtml(submission.email || "Not provided")}</strong></div>
+            <div><span>Phone</span><strong>${escapeHtml(phone)}</strong></div>
+            <div><span>Location</span><strong>${escapeHtml(location)}</strong></div>
+            <div><span>Age</span><strong>${escapeHtml(submission.age || "Not provided")}</strong></div>
+            <div><span>Experience</span><strong>${escapeHtml(submission.experienceLevel || "Not provided")}</strong></div>
+            <div><span>Genre</span><strong>${escapeHtml(submission.genre || "Not provided")}</strong></div>
+            <div class="submission-detail-wide"><span>Social Media</span><strong>${social}</strong></div>
+            <div class="submission-detail-wide"><span>How They Heard About Us</span><strong>${escapeHtml(submission.heardAbout || "Not provided")}</strong></div>
+          </div>
+
+          <div class="submission-queue-actions">
+            <button type="button" class="queue-approve" data-submission-action="approve" data-id="${escapeHtml(submission.id)}">Approve</button>
+            <button type="button" class="queue-reject" data-submission-action="reject" data-id="${escapeHtml(submission.id)}">Reject</button>
+          </div>
+        </article>
+      `;
+    }).join("");
+
+    container.querySelectorAll("button[data-submission-action]").forEach((button) => {
+      const action = button.getAttribute("data-submission-action");
+      const id = button.getAttribute("data-id");
+      button.addEventListener("click", () => {
+        if (action === "approve") approveSubmission(id);
+        if (action === "reject") rejectSubmission(id);
+      });
+    });
+  }
+
+  async function loadSubmissions() {
+    const container = $("submissionQueue");
+    if (!container) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/api/submissions`, { headers: authHeaders() });
+      if (response.status === 401) {
+        pendingSubmissions = [];
+        $("submissionQueueCount").textContent = "0 Pending";
+        container.innerHTML = "";
+        setSubmissionQueueState("Enter a valid admin token to load submissions.", "unauthorized");
+        return;
+      }
+      if (!response.ok) throw new Error("Failed to load submission queue");
+
+      pendingSubmissions = await response.json();
+      renderSubmissionQueue();
+      logLine(`Pending submissions loaded: ${pendingSubmissions.length}`, "info");
+    } catch (_error) {
+      pendingSubmissions = [];
+      $("submissionQueueCount").textContent = "0 Pending";
+      container.innerHTML = "";
+      setSubmissionQueueState("Failed to load the approval queue.", "error");
+      logLine("Failed to load pending submissions.", "red");
+    }
+  }
+
+  async function approveSubmission(id) {
+    const submission = pendingSubmissions.find((item) => item.id === id);
+    if (!submission) return;
+
+    const confirmed = await customConfirm(
+      `Approve ${submission.stageName || "this profile"} and add it to the DJ database?`,
+      { title: "Approve Submission", okText: "Approve", cancelText: "Cancel" }
+    );
+    if (!confirmed) return;
+
+    const response = await fetch(`${API_BASE}/api/submissions/${encodeURIComponent(id)}/approve`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+
+    if (response.status === 401) {
+      logLine("Approval blocked: Unauthorized.", "red");
+      return alert("Unauthorized. Paste Admin Token and click Save Token.");
+    }
+    if (response.status === 409) {
+      const result = await response.json().catch(() => ({}));
+      logLine("Approval failed: Duplicate profile.", "warn");
+      return alert(result.error || "A matching profile already exists.");
+    }
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      logLine("Approval failed.", "red");
+      return alert(result.error || "Failed to approve submission.");
+    }
+
+    logLine(`Submission approved: ${submission.stageName}.`, "ok");
+    await Promise.all([loadSubmissions(), loadProfiles()]);
+    applyFilters();
+    updateCharts();
+  }
+
+  async function rejectSubmission(id) {
+    const submission = pendingSubmissions.find((item) => item.id === id);
+    if (!submission) return;
+
+    const confirmed = await customConfirm(
+      `Reject and remove the submission for ${submission.stageName || "this profile"}?`,
+      { title: "Reject Submission", okText: "Reject", cancelText: "Cancel", danger: true }
+    );
+    if (!confirmed) return;
+
+    const response = await fetch(`${API_BASE}/api/submissions/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
+
+    if (response.status === 401) {
+      logLine("Rejection blocked: Unauthorized.", "red");
+      return alert("Unauthorized. Paste Admin Token and click Save Token.");
+    }
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      logLine("Rejection failed.", "red");
+      return alert(result.error || "Failed to reject submission.");
+    }
+
+    logLine(`Submission rejected: ${submission.stageName}.`, "red");
+    await loadSubmissions();
+  }
+
   // ----------------------------
   // Filtering / Sorting / Display
   // ----------------------------
@@ -1428,7 +1604,7 @@
 
     await checkServerHealth();
     await checkAuthState();
-    await loadProfiles();
+    await Promise.all([loadProfiles(), loadSubmissions()]);
     applyFilters();
     updateCharts();
   });

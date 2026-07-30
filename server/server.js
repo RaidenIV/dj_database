@@ -9,6 +9,7 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 
 const djsRouter = require("./routes/djs");
+const submissionsRouter = require("./routes/submissions");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -60,6 +61,7 @@ function resolveClientDir() {
 
 const clientDir = resolveClientDir();
 const clientIndex = path.join(clientDir, "index.html");
+const submissionPage = path.join(clientDir, "submit.html");
 
 // Serve UI
 app.use(express.static(clientDir));
@@ -69,11 +71,17 @@ app.get("/favicon.ico", (_req, res) => res.status(204).end());
 
 // API
 app.use("/api/djs", djsRouter);
+app.use("/api/submissions", submissionsRouter);
 
 // Health
 app.get("/health", (_req, res) => {
   const mongoState = mongoose.connection?.readyState ?? 0;
   res.json({ ok: true, mongoState });
+});
+
+// Public profile submission page
+app.get(["/submit", "/submit/"], (_req, res) => {
+  res.sendFile(submissionPage);
 });
 
 // Root
@@ -99,7 +107,8 @@ async function start() {
 
   try {
     const DJProfile = require("./models/DJProfile");
-    await DJProfile.syncIndexes();
+    const DJSubmission = require("./models/DJSubmission");
+    await Promise.all([DJProfile.syncIndexes(), DJSubmission.syncIndexes()]);
   } catch (e) {
     console.warn("Index sync failed (continuing):", e?.message || e);
   }
