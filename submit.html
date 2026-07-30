@@ -1,0 +1,190 @@
+<!--
+  SQUARESPACE PAGE HEADER CODE INJECTION
+
+  1. Replace YOUR-DJ-DATABASE-DOMAIN with the Railway domain for the deployed
+     DJ Database application.
+  2. Paste this entire file into the submission page's Page Header Code Injection.
+  3. Do not paste this into a Code Block.
+
+  The hosted submission form remains at /submit?embed=1. This snippet replaces
+  the visible Squarespace page with a fixed, black, non-scrollable viewport and
+  scales the complete form to fit inside it.
+-->
+
+<style>
+  html.xodia-submission-injection,
+  html.xodia-submission-injection body {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    background: #000 !important;
+  }
+
+  html.xodia-submission-injection body {
+    position: fixed !important;
+    inset: 0 !important;
+  }
+
+  html.xodia-submission-injection body > *:not(#xodia-dj-submission-header-app) {
+    display: none !important;
+  }
+
+  #xodia-dj-submission-header-app {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: grid;
+    place-items: center;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #xodia-dj-submission-viewport {
+    position: relative;
+    flex: none;
+    overflow: visible;
+  }
+
+  #xodia-dj-submission-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 800px;
+    height: 1000px;
+    margin: 0;
+    border: 0;
+    background: #000;
+    transform-origin: top left;
+  }
+
+  #xodia-dj-submission-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    color: #fff;
+    background: #000;
+    font-family: Rajdhani, Arial, sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  #xodia-dj-submission-header-app.is-ready #xodia-dj-submission-loading {
+    display: none;
+  }
+
+  @supports not (height: 100dvh) {
+    #xodia-dj-submission-header-app {
+      height: 100vh;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    "use strict";
+
+    const APP_ORIGIN = "https://YOUR-DJ-DATABASE-DOMAIN.up.railway.app";
+    const FORM_WIDTH = 800;
+    const DEFAULT_FORM_HEIGHT = 1000;
+    const EDGE_GAP = 16;
+
+    document.documentElement.classList.add("xodia-submission-injection");
+
+    const initializeSubmissionPage = () => {
+      if (!document.body || document.getElementById("xodia-dj-submission-header-app")) {
+        return;
+      }
+
+      document.body.classList.add("xodia-submission-injection");
+
+      const app = document.createElement("div");
+      app.id = "xodia-dj-submission-header-app";
+
+      const viewport = document.createElement("div");
+      viewport.id = "xodia-dj-submission-viewport";
+
+      const frame = document.createElement("iframe");
+      frame.id = "xodia-dj-submission-frame";
+      frame.title = "DJ Profile Submission";
+      frame.src = `${APP_ORIGIN.replace(/\/$/, "")}/submit?embed=1`;
+      frame.setAttribute("scrolling", "no");
+      frame.setAttribute("allow", "clipboard-write");
+
+      const loading = document.createElement("p");
+      loading.id = "xodia-dj-submission-loading";
+      loading.textContent = "Loading submission form";
+
+      viewport.append(frame);
+      app.append(viewport, loading);
+      document.body.append(app);
+
+      let formHeight = DEFAULT_FORM_HEIGHT;
+
+      const fitFormToViewport = () => {
+        const availableWidth = Math.max(window.innerWidth - EDGE_GAP * 2, 1);
+        const availableHeight = Math.max(window.innerHeight - EDGE_GAP * 2, 1);
+        const scale = Math.min(
+          availableWidth / FORM_WIDTH,
+          availableHeight / formHeight,
+          1
+        );
+
+        const renderedWidth = Math.round(FORM_WIDTH * scale);
+        const renderedHeight = Math.round(formHeight * scale);
+
+        viewport.style.width = `${renderedWidth}px`;
+        viewport.style.height = `${renderedHeight}px`;
+        frame.style.width = `${FORM_WIDTH}px`;
+        frame.style.height = `${formHeight}px`;
+        frame.style.transform = `scale(${scale})`;
+      };
+
+      frame.addEventListener("load", () => {
+        app.classList.add("is-ready");
+        fitFormToViewport();
+      });
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== frame.contentWindow || event.origin !== APP_ORIGIN) {
+          return;
+        }
+
+        if (event.data?.type !== "xodia-dj-submission-height") {
+          return;
+        }
+
+        const reportedHeight = Number(event.data.height);
+        if (!Number.isFinite(reportedHeight) || reportedHeight <= 0) {
+          return;
+        }
+
+        formHeight = Math.ceil(reportedHeight);
+        fitFormToViewport();
+      });
+
+      window.addEventListener("resize", fitFormToViewport, { passive: true });
+      window.addEventListener("orientationchange", fitFormToViewport, { passive: true });
+
+      fitFormToViewport();
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeSubmissionPage, { once: true });
+    } else {
+      initializeSubmissionPage();
+    }
+  })();
+</script>
