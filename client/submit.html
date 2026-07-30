@@ -1,276 +1,190 @@
-<!DOCTYPE html>
+<!--
+  SQUARESPACE PAGE HEADER CODE INJECTION
 
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DJ Profile Submission</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="/css/styles.css?v=8" rel="stylesheet"/>
-<link href="/css/submit.css?v=3" rel="stylesheet"/>
+  1. Replace YOUR-DJ-DATABASE-DOMAIN with the Railway domain for the deployed
+     DJ Database application.
+  2. Paste this entire file into the submission page's Page Header Code Injection.
+  3. Do not paste this into a Code Block.
+
+  The hosted submission form remains at /submit?embed=1. This snippet replaces
+  the visible Squarespace page with a fixed, black, non-scrollable viewport and
+  scales the complete form to fit inside it.
+-->
+
 <style>
-    html,
-    body.submission-page {
-      min-height: 100%;
-      margin: 0;
-      background: #000;
+  html.xodia-submission-injection,
+  html.xodia-submission-injection body {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    background: #000 !important;
+  }
+
+  html.xodia-submission-injection body {
+    position: fixed !important;
+    inset: 0 !important;
+  }
+
+  html.xodia-submission-injection body > *:not(#xodia-dj-submission-header-app) {
+    display: none !important;
+  }
+
+  #xodia-dj-submission-header-app {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: grid;
+    place-items: center;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #xodia-dj-submission-viewport {
+    position: relative;
+    flex: none;
+    overflow: visible;
+  }
+
+  #xodia-dj-submission-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 800px;
+    height: 1000px;
+    margin: 0;
+    border: 0;
+    background: #000;
+    transform-origin: top left;
+  }
+
+  #xodia-dj-submission-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    color: #fff;
+    background: #000;
+    font-family: Rajdhani, Arial, sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  #xodia-dj-submission-header-app.is-ready #xodia-dj-submission-loading {
+    display: none;
+  }
+
+  @supports not (height: 100dvh) {
+    #xodia-dj-submission-header-app {
+      height: 100vh;
     }
+  }
+</style>
 
-    body.submission-page {
-      min-height: 100vh;
-      overflow-x: hidden;
+<script>
+  (() => {
+    "use strict";
+
+    const APP_ORIGIN = "https://YOUR-DJ-DATABASE-DOMAIN.up.railway.app";
+    const FORM_WIDTH = 800;
+    const DEFAULT_FORM_HEIGHT = 1000;
+    const EDGE_GAP = 16;
+
+    document.documentElement.classList.add("xodia-submission-injection");
+
+    const initializeSubmissionPage = () => {
+      if (!document.body || document.getElementById("xodia-dj-submission-header-app")) {
+        return;
+      }
+
+      document.body.classList.add("xodia-submission-injection");
+
+      const app = document.createElement("div");
+      app.id = "xodia-dj-submission-header-app";
+
+      const viewport = document.createElement("div");
+      viewport.id = "xodia-dj-submission-viewport";
+
+      const frame = document.createElement("iframe");
+      frame.id = "xodia-dj-submission-frame";
+      frame.title = "DJ Profile Submission";
+      frame.src = `${APP_ORIGIN.replace(/\/$/, "")}/submit?embed=1`;
+      frame.setAttribute("scrolling", "no");
+      frame.setAttribute("allow", "clipboard-write");
+
+      const loading = document.createElement("p");
+      loading.id = "xodia-dj-submission-loading";
+      loading.textContent = "Loading submission form";
+
+      viewport.append(frame);
+      app.append(viewport, loading);
+      document.body.append(app);
+
+      let formHeight = DEFAULT_FORM_HEIGHT;
+
+      const fitFormToViewport = () => {
+        const availableWidth = Math.max(window.innerWidth - EDGE_GAP * 2, 1);
+        const availableHeight = Math.max(window.innerHeight - EDGE_GAP * 2, 1);
+        const scale = Math.min(
+          availableWidth / FORM_WIDTH,
+          availableHeight / formHeight,
+          1
+        );
+
+        const renderedWidth = Math.round(FORM_WIDTH * scale);
+        const renderedHeight = Math.round(formHeight * scale);
+
+        viewport.style.width = `${renderedWidth}px`;
+        viewport.style.height = `${renderedHeight}px`;
+        frame.style.width = `${FORM_WIDTH}px`;
+        frame.style.height = `${formHeight}px`;
+        frame.style.transform = `scale(${scale})`;
+      };
+
+      frame.addEventListener("load", () => {
+        app.classList.add("is-ready");
+        fitFormToViewport();
+      });
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== frame.contentWindow || event.origin !== APP_ORIGIN) {
+          return;
+        }
+
+        if (event.data?.type !== "xodia-dj-submission-height") {
+          return;
+        }
+
+        const reportedHeight = Number(event.data.height);
+        if (!Number.isFinite(reportedHeight) || reportedHeight <= 0) {
+          return;
+        }
+
+        formHeight = Math.ceil(reportedHeight);
+        fitFormToViewport();
+      });
+
+      window.addEventListener("resize", fitFormToViewport, { passive: true });
+      window.addEventListener("orientationchange", fitFormToViewport, { passive: true });
+
+      fitFormToViewport();
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeSubmissionPage, { once: true });
+    } else {
+      initializeSubmissionPage();
     }
-
-    .submission-page .submission-shell {
-      min-height: 100vh;
-      box-sizing: border-box;
-      background: #000;
-    }
-
-    .submission-page .form-grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 16px;
-      align-items: start;
-    }
-
-    .submission-page .form-group {
-      min-width: 0;
-    }
-
-    .submission-page .field-half {
-      grid-column: span 6;
-    }
-
-    .submission-page .field-third {
-      grid-column: span 4;
-    }
-
-    .submission-page .field-two-thirds {
-      grid-column: span 8;
-    }
-
-    .submission-page .field-full,
-    .submission-page .form-group-full {
-      grid-column: 1 / -1;
-    }
-
-    .submission-page input,
-    .submission-page select,
-    .submission-page button {
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 720px) {
-      .submission-page .submission-shell {
-        width: 100%;
-        padding: 12px !important;
-      }
-
-      .submission-page .submission-card {
-        width: 100%;
-        max-width: 100%;
-        padding: 18px !important;
-        box-sizing: border-box;
-      }
-
-      .submission-page .submission-header {
-        align-items: flex-start;
-        gap: 14px;
-      }
-
-      .submission-page .submission-logo {
-        width: min(150px, 45vw);
-        height: auto;
-      }
-
-      .submission-page .form-grid {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 14px;
-      }
-
-      .submission-page .field-half,
-      .submission-page .field-third,
-      .submission-page .field-two-thirds,
-      .submission-page .field-full,
-      .submission-page .form-group-full {
-        grid-column: 1;
-      }
-
-      .submission-page input,
-      .submission-page select {
-        width: 100%;
-        min-height: 46px;
-        font-size: 16px;
-      }
-
-      .submission-page .genre-checkbox-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .submission-page .submission-actions,
-      .submission-page .submission-actions button {
-        width: 100%;
-      }
-
-      .submission-page .submission-actions button {
-        min-height: 48px;
-      }
-    }
-
-    @media (max-width: 400px) {
-      .submission-page .submission-shell {
-        padding: 8px !important;
-      }
-
-      .submission-page .submission-card {
-        padding: 14px !important;
-      }
-
-      .submission-page .genre-checkbox-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-</style></head>
-<body class="submission-page">
-<main class="submission-shell">
-<section class="submission-card">
-<header class="submission-header">
-<div>
-<h1>DJ Submission Form</h1>
-<p class="subtitle">Complete the form below to submit your information for future bookings.</p>
-</div>
-<img alt="Xodia Media Group" class="submission-logo" src="https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w"/>
-</header>
-<form id="submissionForm" novalidate="">
-<div class="form-grid"><div class="form-group field-half">
-<label for="stageName">Stage Name *</label>
-<input autocomplete="organization-title" id="stageName" maxlength="150" required="" type="text"/>
-</div><div class="form-group field-half">
-<label for="fullName">Name (First &amp; Last) *</label>
-<input autocomplete="name" id="fullName" maxlength="150" required="" type="text"/>
-</div><div class="form-group field-half">
-<label for="email">Email *</label>
-<input autocomplete="email" id="email" maxlength="254" required="" type="email"/>
-</div><div class="form-group field-half">
-<label for="phoneNumber">Phone Number</label>
-<input autocomplete="tel" id="phoneNumber" maxlength="25" placeholder="(555) 555-5555" type="tel"/>
-</div><div class="form-group field-third">
-<label for="city">City</label>
-<input autocomplete="address-level2" id="city" maxlength="150" type="text"/>
-</div><div class="form-group field-third">
-<label for="state">State</label>
-<select autocomplete="address-level1" id="state">
-<option value="">Select state...</option>
-<option value="Alabama">Alabama</option>
-<option value="Alaska">Alaska</option>
-<option value="Arizona">Arizona</option>
-<option value="Arkansas">Arkansas</option>
-<option value="California">California</option>
-<option value="Colorado">Colorado</option>
-<option value="Connecticut">Connecticut</option>
-<option value="Delaware">Delaware</option>
-<option value="Florida">Florida</option>
-<option value="Georgia">Georgia</option>
-<option value="Hawaii">Hawaii</option>
-<option value="Idaho">Idaho</option>
-<option value="Illinois">Illinois</option>
-<option value="Indiana">Indiana</option>
-<option value="Iowa">Iowa</option>
-<option value="Kansas">Kansas</option>
-<option value="Kentucky">Kentucky</option>
-<option value="Louisiana">Louisiana</option>
-<option value="Maine">Maine</option>
-<option value="Maryland">Maryland</option>
-<option value="Massachusetts">Massachusetts</option>
-<option value="Michigan">Michigan</option>
-<option value="Minnesota">Minnesota</option>
-<option value="Mississippi">Mississippi</option>
-<option value="Missouri">Missouri</option>
-<option value="Montana">Montana</option>
-<option value="Nebraska">Nebraska</option>
-<option value="Nevada">Nevada</option>
-<option value="New Hampshire">New Hampshire</option>
-<option value="New Jersey">New Jersey</option>
-<option value="New Mexico">New Mexico</option>
-<option value="New York">New York</option>
-<option value="North Carolina">North Carolina</option>
-<option value="North Dakota">North Dakota</option>
-<option value="Ohio">Ohio</option>
-<option value="Oklahoma">Oklahoma</option>
-<option value="Oregon">Oregon</option>
-<option value="Pennsylvania">Pennsylvania</option>
-<option value="Rhode Island">Rhode Island</option>
-<option value="South Carolina">South Carolina</option>
-<option value="South Dakota">South Dakota</option>
-<option value="Tennessee">Tennessee</option>
-<option value="Texas">Texas</option>
-<option value="Utah">Utah</option>
-<option value="Vermont">Vermont</option>
-<option value="Virginia">Virginia</option>
-<option value="Washington">Washington</option>
-<option value="West Virginia">West Virginia</option>
-<option value="Wisconsin">Wisconsin</option>
-<option value="Wyoming">Wyoming</option>
-</select>
-</div><div class="form-group field-third">
-<label for="age">Age *</label>
-<select id="age" required="">
-<option value="">Select age range...</option>
-<option value="under 18">under 18</option>
-<option value="18-25">18-25</option>
-<option value="25-35">25-35</option>
-<option value="35+">35+</option>
-<option value="Prefer not to answer">Prefer not to answer</option>
-</select>
-</div><div class="form-group field-third">
-<label for="experienceLevel">Experience Level</label>
-<select id="experienceLevel">
-<option value="">Select experience level...</option>
-<option value="Under 1 year">Under 1 year</option>
-<option value="1 year">1 year</option>
-<option value="2 years">2 years</option>
-<option value="3 years">3 years</option>
-<option value="4 years">4 years</option>
-<option value="5 years +">5 years +</option>
-</select>
-</div><div class="form-group form-group-full field-two-thirds">
-<label for="heardAbout">How did you hear about us?</label>
-<select id="heardAbout">
-<option value="">Select source...</option>
-<option value="Social Media (Facebook, Instagram, or TikTok)">Social Media (Facebook, Instagram, or TikTok)</option>
-<option value="Online Ad">Online Ad</option>
-<option value="Referral (friend or family member)">Referral (friend or family member)</option>
-<option value="Previous Experience">Previous Experience</option>
-<option value="Other">Other</option>
-</select>
-<input hidden="" id="heardAboutOther" maxlength="150" placeholder="Please specify..." type="text"/>
-</div><div class="form-group field-full">
-<label>Genre</label>
-<div aria-label="Genre options" class="genre-checkbox-grid" id="genreOptions" role="group">
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="Dubstep"/><span>Dubstep</span></label>
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="Riddim"/><span>Riddim</span></label>
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="Drum &amp; Bass"/><span>Drum &amp; Bass</span></label>
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="Trap"/><span>Trap</span></label>
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="Techno"/><span>Techno</span></label>
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="House"/><span>House</span></label>
-<label class="genre-checkbox"><input name="genre" type="checkbox" value="Hip-Hop"/><span>Hip-Hop</span></label>
-<label class="genre-checkbox"><input id="genreOtherCheckbox" name="genre" type="checkbox" value="Other"/><span>Other</span></label>
-</div>
-<input hidden="" id="genreOther" maxlength="150" placeholder="Please specify..." type="text"/>
-</div><div class="form-group form-group-full field-full">
-<label for="socialMedia">Social Media Links</label>
-<input id="socialMedia" maxlength="1000" placeholder="Instagram, Facebook, SoundCloud, etc." type="text"/>
-</div></div>
-<div class="submission-actions">
-<button class="primary" id="submitButton" type="submit">Submit</button>
-</div>
-<div aria-live="polite" class="submission-status" id="submissionStatus" role="status"></div>
-</form>
-</section>
-</main>
-<script src="/js/submit.js?v=3"></script>
-</body>
-</html>
+  })();
+</script>
