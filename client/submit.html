@@ -42,7 +42,7 @@
     display: grid;
     place-items: center;
     width: 100vw;
-    height: 100dvh;
+    height: var(--xodia-app-height, 100dvh);
     overflow: hidden;
     background: #000;
     color: var(--text);
@@ -175,6 +175,18 @@
     box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
   }
 
+  #xodia-dj-submission-form.validation-attempted input:invalid,
+  #xodia-dj-submission-form.validation-attempted select:invalid {
+    border-color: #ff3b30;
+    box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.18);
+  }
+
+  #xodia-dj-submission-form.validation-attempted .genre-checkbox-grid.invalid {
+    border-radius: 10px;
+    outline: 2px solid #ff3b30;
+    outline-offset: 3px;
+  }
+
   #xodia-dj-submission-app [hidden] {
     display: none !important;
   }
@@ -228,20 +240,38 @@
   #xodia-dj-submission-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
     margin-top: 14px;
+  }
+
+  #xodia-dj-reset-button,
+  #xodia-dj-submit-button {
+    min-height: 42px;
+    margin: 0;
+    border-radius: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font: 700 14px/1 Rajdhani, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  #xodia-dj-reset-button {
+    min-width: 130px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text);
+  }
+
+  #xodia-dj-reset-button:hover,
+  #xodia-dj-reset-button:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   #xodia-dj-submit-button {
     min-width: 210px;
-    min-height: 42px;
-    margin: 0;
     border: 0;
-    border-radius: 10px;
     background: var(--accent);
     color: #fff;
-    padding: 10px 20px;
-    cursor: pointer;
-    font: 700 14px/1 Rajdhani, ui-sans-serif, system-ui, sans-serif;
   }
 
   #xodia-dj-submit-button:disabled {
@@ -316,12 +346,14 @@
       padding: 6px 7px;
     }
 
-    #xodia-dj-submission-actions,
-    #xodia-dj-submit-button {
+    #xodia-dj-submission-actions {
       width: 100%;
     }
 
+    #xodia-dj-reset-button,
     #xodia-dj-submit-button {
+      flex: 1 1 0;
+      width: auto;
       min-width: 0;
     }
 
@@ -528,6 +560,7 @@
               </div>
 
               <div id="xodia-dj-submission-actions">
+                <button type="button" id="xodia-dj-reset-button">Reset</button>
                 <button type="submit" id="xodia-dj-submit-button">Submit</button>
               </div>
               <div id="xodia-dj-submission-status" role="status" aria-live="polite"></div>
@@ -544,17 +577,36 @@
     const fit = $("xodia-dj-submission-fit");
     const card = $("xodia-dj-submission-card");
     const form = $("xodia-dj-submission-form");
+    const resetButton = $("xodia-dj-reset-button");
     const button = $("xodia-dj-submit-button");
     const status = $("xodia-dj-submission-status");
+    const genreGrid = app.querySelector(".genre-checkbox-grid");
     const genreCheckboxes = Array.from(app.querySelectorAll('input[name="xodia-genre"]'));
     const genreOtherCheckbox = $("xodia-genreOtherCheckbox");
     const genreOther = $("xodia-genreOther");
     const heardAbout = $("xodia-heardAbout");
     const heardAboutOther = $("xodia-heardAboutOther");
 
+    let stableViewportWidth = window.innerWidth;
+    let stableViewportHeight = window.innerHeight;
+    let viewportResizeFrame = 0;
+
+    function isFormControlFocused() {
+      const active = document.activeElement;
+      return Boolean(
+        active &&
+        app.contains(active) &&
+        /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName)
+      );
+    }
+
+    function applyStableViewportHeight() {
+      app.style.setProperty("--xodia-app-height", `${stableViewportHeight}px`);
+    }
+
     function fitForm() {
-      const availableWidth = Math.max(window.innerWidth - VIEWPORT_GAP * 2, 1);
-      const availableHeight = Math.max(window.innerHeight - VIEWPORT_GAP * 2, 1);
+      const availableWidth = Math.max(stableViewportWidth - VIEWPORT_GAP * 2, 1);
+      const availableHeight = Math.max(stableViewportHeight - VIEWPORT_GAP * 2, 1);
       const naturalWidth = Math.min(MAX_FORM_WIDTH, availableWidth);
 
       fit.style.width = `${naturalWidth}px`;
@@ -571,6 +623,27 @@
       holder.style.width = `${renderedWidth}px`;
       holder.style.height = `${renderedHeight}px`;
     }
+
+    function updateStableViewport(force = false) {
+      const nextWidth = window.innerWidth;
+      const widthChanged = Math.abs(nextWidth - stableViewportWidth) > 2;
+
+      if (!force && isFormControlFocused() && !widthChanged) {
+        return;
+      }
+
+      stableViewportWidth = nextWidth;
+      stableViewportHeight = window.innerHeight;
+      applyStableViewportHeight();
+      fitForm();
+    }
+
+    function queueViewportUpdate(force = false) {
+      cancelAnimationFrame(viewportResizeFrame);
+      viewportResizeFrame = requestAnimationFrame(() => updateStableViewport(force));
+    }
+
+    applyStableViewportHeight();
 
     function normalizePhoneDigits(raw) {
       const digits = String(raw || "").replace(/\D/g, "");
@@ -596,6 +669,7 @@
       genreCheckboxes[0].setCustomValidity(
         hasSelectedGenre ? "" : "Select at least one genre."
       );
+      genreGrid.classList.toggle("invalid", !hasSelectedGenre);
       return hasSelectedGenre;
     }
 
@@ -624,9 +698,21 @@
       heardAboutOther.value = "";
     }
 
+    function resetForm() {
+      form.reset();
+      form.classList.remove("validation-attempted");
+      resetConditionalFields();
+      validateGenreSelection();
+      setStatus("");
+      requestAnimationFrame(fitForm);
+    }
+
+    resetButton.addEventListener("click", resetForm);
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
+      form.classList.add("validation-attempted");
       validateGenreSelection();
 
       if (!form.checkValidity()) {
@@ -666,7 +752,9 @@
         }
 
         form.reset();
+        form.classList.remove("validation-attempted");
         resetConditionalFields();
+        validateGenreSelection();
         setStatus("Submission Completed", "success");
       } catch (error) {
         setStatus(error.message || "Submission failed. Please try again.", "error");
@@ -698,15 +786,17 @@
       requestAnimationFrame(fitForm);
     });
 
-    window.addEventListener("resize", fitForm, { passive: true });
-    window.addEventListener("orientationchange", fitForm, { passive: true });
+    window.addEventListener("resize", () => queueViewportUpdate(false), { passive: true });
+    window.addEventListener("orientationchange", () => {
+      window.setTimeout(() => queueViewportUpdate(true), 250);
+    }, { passive: true });
 
     if ("ResizeObserver" in window) {
       new ResizeObserver(fitForm).observe(card);
     }
 
     validateGenreSelection();
-    requestAnimationFrame(fitForm);
+    queueViewportUpdate(true);
   }
 
   if (document.readyState === "loading") {
