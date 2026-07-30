@@ -1,18 +1,18 @@
 .submission-page {
-  padding: 24px;
+  padding: 20px;
 }
 
 .submission-shell {
-  width: min(920px, 100%);
+  width: min(800px, 100%);
   margin: 0 auto;
-  padding: 28px 0;
+  padding: 40px 0;
 }
 
 .submission-card {
   background: #0d0d0e;
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 28px;
+  padding: 24px;
 }
 
 .submission-header {
@@ -110,21 +110,18 @@ html.is-embedded,
 }
 
 .submission-page.is-embedded .submission-shell {
-  width: 100%;
+  width: min(800px, 100%);
+  margin: 0 auto;
   padding: 0;
 }
 
 @media (max-width: 640px) {
   .submission-page {
-    padding: 12px;
+    padding: 20px;
   }
 
   .submission-shell {
-    padding: 12px 0;
-  }
-
-  .submission-card {
-    padding: 20px;
+    padding: 20px 0;
   }
 
   .submission-header {

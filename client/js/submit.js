@@ -124,12 +124,12 @@
 
       form.reset();
       resetConditionalFields();
-      setStatus("Your profile was submitted and is awaiting approval.", "success");
+      setStatus("Submission Completed", "success");
     } catch (error) {
       setStatus(error.message || "Submission failed. Please try again.", "error");
     } finally {
       button.disabled = false;
-      button.textContent = "Submit for Approval";
+      button.textContent = "Submit";
     }
   }
 
