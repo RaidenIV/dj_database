@@ -6,6 +6,42 @@ const { requireAdmin } = require("../middleware/requireAdmin");
 
 const router = express.Router();
 
+const PUBLIC_FORM_ORIGINS = new Set([
+  "https://djdatabase-production.up.railway.app",
+  "https://xodiamediagroup.com",
+  "https://www.xodiamediagroup.com"
+]);
+
+function isAllowedPublicFormOrigin(origin) {
+  if (!origin) return true;
+  if (PUBLIC_FORM_ORIGINS.has(origin)) return true;
+  if (/^https:\/\/([a-z0-9-]+\.)*squarespace\.com$/i.test(origin)) return true;
+  if (/^https:\/\/([a-z0-9-]+\.)*sqspcdn\.com$/i.test(origin)) return true;
+  return /^http:\/\/localhost(?::\d+)?$/i.test(origin);
+}
+
+function publicSubmissionCors(req, res, next) {
+  const origin = req.get("Origin");
+
+  if (!isAllowedPublicFormOrigin(origin)) {
+    return res.status(403).json({ error: "Submission origin is not allowed." });
+  }
+
+  if (origin) {
+    res.set("Access-Control-Allow-Origin", origin);
+    res.set("Vary", "Origin");
+  }
+
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  return next();
+}
+
 const publicSubmissionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 10,
@@ -68,7 +104,9 @@ function normalizeSubmissionInput(body) {
   };
 }
 
-router.post("/", publicSubmissionLimiter, async (req, res) => {
+router.options("/", publicSubmissionCors);
+
+router.post("/", publicSubmissionCors, publicSubmissionLimiter, async (req, res) => {
   try {
     const data = normalizeSubmissionInput(req.body);
 
