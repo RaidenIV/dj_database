@@ -1,20 +1,13 @@
 <!--
-  SQUARESPACE PAGE HEADER CODE INJECTION
+  DJ SUBMISSION — SQUARESPACE PAGE HEADER CODE INJECTION
 
-  1. Paste this entire file into the submission page's Page Header Code Injection.
-  2. Do not paste this into a Code Block.
-
-  DJ Database URL:
-  https://djdatabase-production.up.railway.app/
-
-  The hosted submission form remains at /submit?embed=1. This snippet replaces
-  the visible Squarespace page with a fixed, black, non-scrollable viewport and
-  scales the complete form to fit inside it.
+  Paste this entire file into the dedicated Squarespace submission page's
+  Page Header Code Injection field. It renders the form directly on the page;
+  it does not use an iframe.
 -->
-
 <style>
-  html.xodia-submission-injection,
-  html.xodia-submission-injection body {
+  html.xodia-dj-form-page,
+  html.xodia-dj-form-page body {
     width: 100% !important;
     height: 100% !important;
     min-height: 100% !important;
@@ -25,16 +18,24 @@
     background: #000 !important;
   }
 
-  html.xodia-submission-injection body {
+  html.xodia-dj-form-page body {
     position: fixed !important;
     inset: 0 !important;
   }
 
-  html.xodia-submission-injection body > *:not(#xodia-dj-submission-header-app) {
+  html.xodia-dj-form-page body > *:not(#xodia-dj-submission-app) {
     display: none !important;
   }
 
-  #xodia-dj-submission-header-app {
+  #xodia-dj-submission-app {
+    --bg: #000;
+    --panel: #0d0d0e;
+    --field: #0f0f12;
+    --text: #f2f2f4;
+    --muted: #a7a7ad;
+    --line: #2a2a2f;
+    --accent: #0099ff;
+    --success: #9fe6b8;
     position: fixed;
     inset: 0;
     z-index: 2147483647;
@@ -42,151 +43,644 @@
     place-items: center;
     width: 100vw;
     height: 100dvh;
-    margin: 0;
-    padding: 0;
     overflow: hidden;
     background: #000;
+    color: var(--text);
+    font-family: Rajdhani, ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 
-  #xodia-dj-submission-viewport {
+  #xodia-dj-submission-app,
+  #xodia-dj-submission-app * {
+    box-sizing: border-box;
+  }
+
+  #xodia-dj-submission-holder {
     position: relative;
     flex: none;
-    overflow: visible;
   }
 
-  #xodia-dj-submission-frame {
+  #xodia-dj-submission-fit {
     position: absolute;
     top: 0;
     left: 0;
-    display: block;
     width: 800px;
-    height: 1000px;
-    margin: 0;
-    border: 0;
-    background: #000;
     transform-origin: top left;
   }
 
-  #xodia-dj-submission-loading {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    margin: 0;
-    color: #fff;
-    background: #000;
-    font-family: Rajdhani, Arial, sans-serif;
-    font-size: 16px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  #xodia-dj-submission-card {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel);
   }
 
-  #xodia-dj-submission-header-app.is-ready #xodia-dj-submission-loading {
-    display: none;
+  #xodia-dj-submission-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  #xodia-dj-submission-app h1 {
+    margin: 0 0 5px;
+    color: var(--text);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+  }
+
+  #xodia-dj-submission-app .submission-subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  #xodia-dj-submission-logo {
+    width: 130px;
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  #xodia-dj-submission-app .submission-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 12px 14px;
+    align-items: start;
+  }
+
+  #xodia-dj-submission-app .field-half { grid-column: span 6; }
+  #xodia-dj-submission-app .field-third { grid-column: span 4; }
+  #xodia-dj-submission-app .field-two-thirds { grid-column: span 8; }
+  #xodia-dj-submission-app .field-full { grid-column: 1 / -1; }
+
+  #xodia-dj-submission-app .form-group {
+    min-width: 0;
+    margin: 0;
+  }
+
+  #xodia-dj-submission-app label {
+    display: block;
+    margin: 0 0 5px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  #xodia-dj-submission-app input[type="text"],
+  #xodia-dj-submission-app input[type="email"],
+  #xodia-dj-submission-app input[type="tel"],
+  #xodia-dj-submission-app select {
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    outline: none;
+    background: var(--field);
+    color: var(--text);
+    padding: 9px 10px;
+    font: 500 14px/1.2 Rajdhani, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  #xodia-dj-submission-app select {
+    padding-right: 30px;
+    cursor: pointer;
+  }
+
+  #xodia-dj-submission-app input:focus,
+  #xodia-dj-submission-app select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.1);
+  }
+
+  #xodia-dj-submission-app [hidden] {
+    display: none !important;
+  }
+
+  #xodia-dj-submission-app .conditional-input {
+    margin-top: 7px !important;
+  }
+
+  #xodia-dj-submission-app .genre-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  #xodia-dj-submission-app .genre-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 36px;
+    margin: 0;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--field);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  #xodia-dj-submission-app .genre-checkbox:has(input:checked) {
+    border-color: var(--accent);
+    background: rgba(0, 153, 255, 0.1);
+    color: var(--accent);
+  }
+
+  #xodia-dj-submission-app .genre-checkbox input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex: 0 0 auto;
+    accent-color: var(--accent);
+  }
+
+  #xodia-dj-submission-app .genre-checkbox span {
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #xodia-dj-submission-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+
+  #xodia-dj-submit-button {
+    min-width: 210px;
+    min-height: 42px;
+    margin: 0;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    font: 700 14px/1 Rajdhani, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  #xodia-dj-submit-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  #xodia-dj-submission-status {
+    min-height: 18px;
+    margin-top: 9px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: right;
+  }
+
+  #xodia-dj-submission-status.success { color: var(--success); }
+  #xodia-dj-submission-status.error { color: #fca5a5; }
+
+  @media (max-width: 620px) {
+    #xodia-dj-submission-card {
+      padding: 14px;
+      border-radius: 11px;
+    }
+
+    #xodia-dj-submission-header {
+      gap: 12px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    #xodia-dj-submission-app h1 {
+      font-size: 25px;
+    }
+
+    #xodia-dj-submission-app .submission-subtitle {
+      font-size: 13px;
+    }
+
+    #xodia-dj-submission-logo {
+      width: 96px;
+    }
+
+    #xodia-dj-submission-app .submission-grid {
+      gap: 9px 10px;
+    }
+
+    #xodia-dj-submission-app .field-third {
+      grid-column: span 6;
+    }
+
+    #xodia-dj-submission-app .field-two-thirds {
+      grid-column: span 6;
+    }
+
+    #xodia-dj-submission-app input[type="text"],
+    #xodia-dj-submission-app input[type="email"],
+    #xodia-dj-submission-app input[type="tel"],
+    #xodia-dj-submission-app select {
+      min-height: 39px;
+      padding: 8px 9px;
+      font-size: 16px;
+    }
+
+    #xodia-dj-submission-app .genre-checkbox-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #xodia-dj-submission-app .genre-checkbox {
+      min-height: 34px;
+      padding: 6px 7px;
+    }
+
+    #xodia-dj-submission-actions,
+    #xodia-dj-submit-button {
+      width: 100%;
+    }
+
+    #xodia-dj-submit-button {
+      min-width: 0;
+    }
+
+    #xodia-dj-submission-status {
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 360px) {
+    #xodia-dj-submission-app .field-half,
+    #xodia-dj-submission-app .field-third,
+    #xodia-dj-submission-app .field-two-thirds {
+      grid-column: 1 / -1;
+    }
+
+    #xodia-dj-submission-header {
+      align-items: center;
+    }
+
+    #xodia-dj-submission-logo {
+      width: 78px;
+    }
   }
 
   @supports not (height: 100dvh) {
-    #xodia-dj-submission-header-app {
+    #xodia-dj-submission-app {
       height: 100vh;
     }
   }
 </style>
 
 <script>
-  (() => {
-    "use strict";
+(() => {
+  "use strict";
 
-    const APP_URL = "https://djdatabase-production.up.railway.app/submit?embed=1";
-    const APP_ORIGIN = new URL(APP_URL).origin;
-    const FORM_WIDTH = 800;
-    const DEFAULT_FORM_HEIGHT = 1000;
-    const EDGE_GAP = 16;
+  const API_URL = "https://djdatabase-production.up.railway.app/api/submissions";
+  const LOGO_URL = "https://images.squarespace-cdn.com/content/v1/681ea18dd168a935c26295bd/c311da3d-6fbf-446a-858c-227fa011e7e3/Xodia+MEDIA+Group+%28TRANS%29+%281%29+%281%29.png?format=750w";
+  const MAX_FORM_WIDTH = 800;
+  const VIEWPORT_GAP = 12;
 
-    document.documentElement.classList.add("xodia-submission-injection");
+  document.documentElement.classList.add("xodia-dj-form-page");
 
-    const initializeSubmissionPage = () => {
-      if (!document.body || document.getElementById("xodia-dj-submission-header-app")) {
+  function initializeDjSubmissionForm() {
+    if (!document.body || document.getElementById("xodia-dj-submission-app")) return;
+
+    document.body.classList.add("xodia-dj-form-page");
+
+    const app = document.createElement("main");
+    app.id = "xodia-dj-submission-app";
+    app.innerHTML = `
+      <div id="xodia-dj-submission-holder">
+        <div id="xodia-dj-submission-fit">
+          <section id="xodia-dj-submission-card" aria-labelledby="xodia-dj-form-title">
+            <header id="xodia-dj-submission-header">
+              <div>
+                <h1 id="xodia-dj-form-title">DJ Submission Form</h1>
+                <p class="submission-subtitle">Complete the form below to submit your information for future bookings.</p>
+              </div>
+              <img id="xodia-dj-submission-logo" src="${LOGO_URL}" alt="Xodia Media Group">
+            </header>
+
+            <form id="xodia-dj-submission-form" novalidate>
+              <div class="submission-grid">
+                <div class="form-group field-half">
+                  <label for="xodia-stageName">Stage Name *</label>
+                  <input type="text" id="xodia-stageName" maxlength="150" autocomplete="organization-title" required>
+                </div>
+
+                <div class="form-group field-half">
+                  <label for="xodia-fullName">Name (First &amp; Last) *</label>
+                  <input type="text" id="xodia-fullName" maxlength="150" autocomplete="name" required>
+                </div>
+
+                <div class="form-group field-half">
+                  <label for="xodia-email">Email *</label>
+                  <input type="email" id="xodia-email" maxlength="254" autocomplete="email" required>
+                </div>
+
+                <div class="form-group field-half">
+                  <label for="xodia-phoneNumber">Phone Number</label>
+                  <input type="tel" id="xodia-phoneNumber" maxlength="25" placeholder="(555) 555-5555" autocomplete="tel">
+                </div>
+
+                <div class="form-group field-third">
+                  <label for="xodia-city">City</label>
+                  <input type="text" id="xodia-city" maxlength="150" autocomplete="address-level2">
+                </div>
+
+                <div class="form-group field-third">
+                  <label for="xodia-state">State</label>
+                  <select id="xodia-state" autocomplete="address-level1">
+                    <option value="">Select state...</option>
+              <option value="Alabama">Alabama</option>
+              <option value="Alaska">Alaska</option>
+              <option value="Arizona">Arizona</option>
+              <option value="Arkansas">Arkansas</option>
+              <option value="California">California</option>
+              <option value="Colorado">Colorado</option>
+              <option value="Connecticut">Connecticut</option>
+              <option value="Delaware">Delaware</option>
+              <option value="Florida">Florida</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Hawaii">Hawaii</option>
+              <option value="Idaho">Idaho</option>
+              <option value="Illinois">Illinois</option>
+              <option value="Indiana">Indiana</option>
+              <option value="Iowa">Iowa</option>
+              <option value="Kansas">Kansas</option>
+              <option value="Kentucky">Kentucky</option>
+              <option value="Louisiana">Louisiana</option>
+              <option value="Maine">Maine</option>
+              <option value="Maryland">Maryland</option>
+              <option value="Massachusetts">Massachusetts</option>
+              <option value="Michigan">Michigan</option>
+              <option value="Minnesota">Minnesota</option>
+              <option value="Mississippi">Mississippi</option>
+              <option value="Missouri">Missouri</option>
+              <option value="Montana">Montana</option>
+              <option value="Nebraska">Nebraska</option>
+              <option value="Nevada">Nevada</option>
+              <option value="New Hampshire">New Hampshire</option>
+              <option value="New Jersey">New Jersey</option>
+              <option value="New Mexico">New Mexico</option>
+              <option value="New York">New York</option>
+              <option value="North Carolina">North Carolina</option>
+              <option value="North Dakota">North Dakota</option>
+              <option value="Ohio">Ohio</option>
+              <option value="Oklahoma">Oklahoma</option>
+              <option value="Oregon">Oregon</option>
+              <option value="Pennsylvania">Pennsylvania</option>
+              <option value="Rhode Island">Rhode Island</option>
+              <option value="South Carolina">South Carolina</option>
+              <option value="South Dakota">South Dakota</option>
+              <option value="Tennessee">Tennessee</option>
+              <option value="Texas">Texas</option>
+              <option value="Utah">Utah</option>
+              <option value="Vermont">Vermont</option>
+              <option value="Virginia">Virginia</option>
+              <option value="Washington">Washington</option>
+              <option value="West Virginia">West Virginia</option>
+              <option value="Wisconsin">Wisconsin</option>
+              <option value="Wyoming">Wyoming</option>
+                  </select>
+                </div>
+
+                <div class="form-group field-third">
+                  <label for="xodia-age">Age *</label>
+                  <select id="xodia-age" required>
+                    <option value="">Select age range...</option>
+                    <option value="under 18">under 18</option>
+                    <option value="18-25">18-25</option>
+                    <option value="25-35">25-35</option>
+                    <option value="35+">35+</option>
+                    <option value="Prefer not to answer">Prefer not to answer</option>
+                  </select>
+                </div>
+
+                <div class="form-group field-third">
+                  <label for="xodia-experienceLevel">Experience Level</label>
+                  <select id="xodia-experienceLevel">
+                    <option value="">Select experience level...</option>
+                    <option value="Under 1 year">Under 1 year</option>
+                    <option value="1 year">1 year</option>
+                    <option value="2 years">2 years</option>
+                    <option value="3 years">3 years</option>
+                    <option value="4 years">4 years</option>
+                    <option value="5 years +">5 years +</option>
+                  </select>
+                </div>
+
+                <div class="form-group field-two-thirds">
+                  <label for="xodia-heardAbout">How did you hear about us?</label>
+                  <select id="xodia-heardAbout">
+                    <option value="">Select source...</option>
+                    <option value="Social Media (Facebook, Instagram, or TikTok)">Social Media (Facebook, Instagram, or TikTok)</option>
+                    <option value="Online Ad">Online Ad</option>
+                    <option value="Referral (friend or family member)">Referral (friend or family member)</option>
+                    <option value="Previous Experience">Previous Experience</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <input class="conditional-input" type="text" id="xodia-heardAboutOther" maxlength="150" placeholder="Please specify..." hidden>
+                </div>
+
+                <div class="form-group field-full">
+                  <label>Genre</label>
+                  <div class="genre-checkbox-grid" role="group" aria-label="Genre options">
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Dubstep"><span>Dubstep</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Riddim"><span>Riddim</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Drum &amp; Bass"><span>Drum &amp; Bass</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Trap"><span>Trap</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Techno"><span>Techno</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="House"><span>House</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Hip-Hop"><span>Hip-Hop</span></label>
+                    <label class="genre-checkbox"><input type="checkbox" name="xodia-genre" value="Other" id="xodia-genreOtherCheckbox"><span>Other</span></label>
+                  </div>
+                  <input class="conditional-input" type="text" id="xodia-genreOther" maxlength="150" placeholder="Please specify..." hidden>
+                </div>
+
+                <div class="form-group field-full">
+                  <label for="xodia-socialMedia">Social Media Links</label>
+                  <input type="text" id="xodia-socialMedia" maxlength="1000" placeholder="Instagram, Facebook, SoundCloud, etc.">
+                </div>
+              </div>
+
+              <div id="xodia-dj-submission-actions">
+                <button type="submit" id="xodia-dj-submit-button">Submit</button>
+              </div>
+              <div id="xodia-dj-submission-status" role="status" aria-live="polite"></div>
+            </form>
+          </section>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(app);
+
+    const $ = (id) => document.getElementById(id);
+    const holder = $("xodia-dj-submission-holder");
+    const fit = $("xodia-dj-submission-fit");
+    const card = $("xodia-dj-submission-card");
+    const form = $("xodia-dj-submission-form");
+    const button = $("xodia-dj-submit-button");
+    const status = $("xodia-dj-submission-status");
+    const genreOtherCheckbox = $("xodia-genreOtherCheckbox");
+    const genreOther = $("xodia-genreOther");
+    const heardAbout = $("xodia-heardAbout");
+    const heardAboutOther = $("xodia-heardAboutOther");
+
+    function fitForm() {
+      const availableWidth = Math.max(window.innerWidth - VIEWPORT_GAP * 2, 1);
+      const availableHeight = Math.max(window.innerHeight - VIEWPORT_GAP * 2, 1);
+      const naturalWidth = Math.min(MAX_FORM_WIDTH, availableWidth);
+
+      fit.style.width = `${naturalWidth}px`;
+      fit.style.transform = "none";
+      holder.style.width = `${naturalWidth}px`;
+      holder.style.height = "auto";
+
+      const naturalHeight = Math.ceil(card.getBoundingClientRect().height);
+      const scale = Math.min(1, availableHeight / Math.max(naturalHeight, 1));
+      const renderedWidth = Math.round(naturalWidth * scale);
+      const renderedHeight = Math.round(naturalHeight * scale);
+
+      fit.style.transform = `scale(${scale})`;
+      holder.style.width = `${renderedWidth}px`;
+      holder.style.height = `${renderedHeight}px`;
+    }
+
+    function normalizePhoneDigits(raw) {
+      const digits = String(raw || "").replace(/\D/g, "");
+      return digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+    }
+
+    function formatPhone(raw) {
+      const digits = normalizePhoneDigits(raw);
+      if (digits.length === 10) {
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      }
+      return String(raw || "");
+    }
+
+    function setStatus(message, kind = "") {
+      status.textContent = message;
+      status.className = kind;
+      requestAnimationFrame(fitForm);
+    }
+
+    function getGenreValue() {
+      const genres = Array.from(app.querySelectorAll('input[name="xodia-genre"]:checked'))
+        .map((checkbox) => checkbox.value)
+        .filter((genre) => genre !== "Other");
+
+      if (genreOtherCheckbox.checked) {
+        genres.push(genreOther.value.trim() || "Other");
+      }
+
+      return genres.join(", ");
+    }
+
+    function getHeardAboutValue() {
+      return heardAbout.value === "Other"
+        ? heardAboutOther.value.trim()
+        : heardAbout.value.trim();
+    }
+
+    function resetConditionalFields() {
+      genreOther.hidden = true;
+      genreOther.value = "";
+      heardAboutOther.hidden = true;
+      heardAboutOther.value = "";
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
         return;
       }
 
-      document.body.classList.add("xodia-submission-injection");
+      button.disabled = true;
+      button.textContent = "Submitting...";
+      setStatus("");
 
-      const app = document.createElement("div");
-      app.id = "xodia-dj-submission-header-app";
-
-      const viewport = document.createElement("div");
-      viewport.id = "xodia-dj-submission-viewport";
-
-      const frame = document.createElement("iframe");
-      frame.id = "xodia-dj-submission-frame";
-      frame.title = "DJ Profile Submission";
-      frame.src = APP_URL;
-      frame.setAttribute("scrolling", "no");
-      frame.setAttribute("allow", "clipboard-write");
-
-      const loading = document.createElement("p");
-      loading.id = "xodia-dj-submission-loading";
-      loading.textContent = "Loading submission form";
-
-      viewport.append(frame);
-      app.append(viewport, loading);
-      document.body.append(app);
-
-      let formHeight = DEFAULT_FORM_HEIGHT;
-
-      const fitFormToViewport = () => {
-        const availableWidth = Math.max(window.innerWidth - EDGE_GAP * 2, 1);
-        const availableHeight = Math.max(window.innerHeight - EDGE_GAP * 2, 1);
-        const scale = Math.min(
-          availableWidth / FORM_WIDTH,
-          availableHeight / formHeight,
-          1
-        );
-
-        const renderedWidth = Math.round(FORM_WIDTH * scale);
-        const renderedHeight = Math.round(formHeight * scale);
-
-        viewport.style.width = `${renderedWidth}px`;
-        viewport.style.height = `${renderedHeight}px`;
-        frame.style.width = `${FORM_WIDTH}px`;
-        frame.style.height = `${formHeight}px`;
-        frame.style.transform = `scale(${scale})`;
+      const payload = {
+        stageName: $("xodia-stageName").value.trim(),
+        fullName: $("xodia-fullName").value.trim(),
+        genre: getGenreValue(),
+        city: $("xodia-city").value.trim(),
+        state: $("xodia-state").value.trim(),
+        phoneNumber: normalizePhoneDigits($("xodia-phoneNumber").value),
+        experienceLevel: $("xodia-experienceLevel").value.trim(),
+        age: $("xodia-age").value.trim(),
+        email: $("xodia-email").value.trim(),
+        socialMedia: $("xodia-socialMedia").value.trim(),
+        heardAbout: getHeardAboutValue()
       };
 
-      frame.addEventListener("load", () => {
-        app.classList.add("is-ready");
-        fitFormToViewport();
-      });
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-      window.addEventListener("message", (event) => {
-        if (event.source !== frame.contentWindow || event.origin !== APP_ORIGIN) {
-          return;
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result.error || "Submission failed. Please try again.");
         }
 
-        if (event.data?.type !== "xodia-dj-submission-height") {
-          return;
-        }
+        form.reset();
+        resetConditionalFields();
+        setStatus("Submission Completed", "success");
+      } catch (error) {
+        setStatus(error.message || "Submission failed. Please try again.", "error");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Submit";
+      }
+    });
 
-        const reportedHeight = Number(event.data.height);
-        if (!Number.isFinite(reportedHeight) || reportedHeight <= 0) {
-          return;
-        }
+    $("xodia-phoneNumber").addEventListener("blur", (event) => {
+      event.target.value = formatPhone(event.target.value);
+    });
 
-        formHeight = Math.ceil(reportedHeight);
-        fitFormToViewport();
-      });
+    genreOtherCheckbox.addEventListener("change", () => {
+      genreOther.hidden = !genreOtherCheckbox.checked;
+      if (genreOther.hidden) genreOther.value = "";
+      else genreOther.focus();
+      requestAnimationFrame(fitForm);
+    });
 
-      window.addEventListener("resize", fitFormToViewport, { passive: true });
-      window.addEventListener("orientationchange", fitFormToViewport, { passive: true });
+    heardAbout.addEventListener("change", () => {
+      heardAboutOther.hidden = heardAbout.value !== "Other";
+      if (heardAboutOther.hidden) heardAboutOther.value = "";
+      else heardAboutOther.focus();
+      requestAnimationFrame(fitForm);
+    });
 
-      fitFormToViewport();
-    };
+    window.addEventListener("resize", fitForm, { passive: true });
+    window.addEventListener("orientationchange", fitForm, { passive: true });
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", initializeSubmissionPage, { once: true });
-    } else {
-      initializeSubmissionPage();
+    if ("ResizeObserver" in window) {
+      new ResizeObserver(fitForm).observe(card);
     }
-  })();
+
+    requestAnimationFrame(fitForm);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeDjSubmissionForm, { once: true });
+  } else {
+    initializeDjSubmissionForm();
+  }
+})();
 </script>
